@@ -18,12 +18,11 @@ Link github gốc :
 
 ## Kiến trúc hệ thống
 
-![System architecture](event-management-backend\uploads\ERD_new.drawio.png)
+![System architecture](/event-management-backend/uploads/ERD_new.drawio.png)
 
 ## Lược đồ cơ sở dữ liệu
 
-![ERD](event-management-backend\uploads\erd.png)
-
+![ERD](/event-management-backend/uploads/erd.png)
 ## Cấu trúc thư mục dự án
 
 ```sql
