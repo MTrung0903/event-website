@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-roboto; /* Áp dụng font Roboto mặc định cho toàn bộ trang */
+  }
+}
+/* Hiệu ứng trượt ra bên trái cho form cũ khi chuyển tiếp (Next) */
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0); /* Bắt đầu tại vị trí gốc */
+    opacity: 1; /* Hoàn toàn rõ */
+  }
+  to {
+    transform: translateX(-100px); /* Trượt 100px sang trái */
+    opacity: 0; /* Hoàn toàn mờ */
+    visibility: hidden; /* Ẩn hoàn toàn khi kết thúc */
+  }
+}
+
+/* Hiệu ứng trượt ra bên phải cho form cũ khi quay lại (Back) */
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0); /* Bắt đầu tại vị trí gốc */
+    opacity: 1; /* Hoàn toàn rõ */
+  }
+  to {
+    transform: translateX(100px); /* Trượt 100px sang phải */
+    opacity: 0; /* Hoàn toàn mờ */
+    visibility: hidden; /* Ẩn hoàn toàn khi kết thúc */
+  }
+}
+
+/* Hiệu ứng trượt vào từ bên phải cho form mới khi chuyển tiếp (Next) */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100px); /* Bắt đầu 100px bên phải */
+    opacity: 0; /* Hoàn toàn mờ */
+    visibility: visible; /* Đảm bảo hiển thị khi bắt đầu */
+  }
+  to {
+    transform: translateX(0); /* Kết thúc tại vị trí gốc */
+    opacity: 1; /* Hoàn toàn rõ */
+  }
+}
+
+/* Hiệu ứng trượt vào từ bên trái cho form mới khi quay lại (Back) */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100px); /* Bắt đầu 100px bên trái */
+    opacity: 0; /* Hoàn toàn mờ */
+    visibility: visible; /* Đảm bảo hiển thị khi bắt đầu */
+  }
+  to {
+    transform: translateX(0); /* Kết thúc tại vị trí gốc */
+    opacity: 1; /* Hoàn toàn rõ */
+  }
+}
+
+/* Hiệu ứng trượt xuống cho các phần có thể thu gọn (accordion) */
+@keyframes slide-down {
+  from {
+    transform: translateY(-10px); /* Bắt đầu 10px phía trên */
+    opacity: 0; /* Hoàn toàn mờ */
+  }
+  to {
+    transform: translateY(0); /* Kết thúc tại vị trí gốc */
+    opacity: 1; /* Hoàn toàn rõ */
+  }
+}
+
+/* Áp dụng hiệu ứng trượt ra bên trái khi chuyển tiếp */
+.animate-slide-out-left {
+  animation: slide-out-left 0.4s ease-in-out forwards; /* 400ms, giữ trạng thái cuối */
+}
+
+/* Áp dụng hiệu ứng trượt ra bên phải khi quay lại */
+.animate-slide-out-right {
+  animation: slide-out-right 0.4s ease-in-out forwards; /* 400ms, giữ trạng thái cuối */
+}
+
+/* Áp dụng hiệu ứng trượt vào từ bên phải khi chuyển tiếp */
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-in-out forwards; /* 400ms, giữ trạng thái cuối */
+}
+
+/* Áp dụng hiệu ứng trượt vào từ bên trái khi quay lại */
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s ease-in-out forwards; /* 400ms, giữ trạng thái cuối */
+}
+
+/* Áp dụng hiệu ứng trượt xuống cho các phần thu gọn */
+.animate-slide-down {
+  animation: slide-down 0.5s ease-out; /* 500ms, mượt mà khi mở rộng */
+}
+
+/* Tối ưu hóa hiệu ứng cho GPU */
+.will-change-transform-opacity {
+  will-change: transform, opacity; /* Báo trước cho trình duyệt tối ưu hóa */
+}

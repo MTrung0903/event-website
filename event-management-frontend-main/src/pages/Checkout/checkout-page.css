@@ -1,0 +1,23 @@
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap');
+.checkout-page-container{
+  font-family: 'Inter', sans-serif;
+  font-weight: 100;
+  color: #696969;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .checkout-page-checkout-page {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .checkout-page-column1,
+  .checkout-page-pay {
+    width: 100%;
+  }
+}
