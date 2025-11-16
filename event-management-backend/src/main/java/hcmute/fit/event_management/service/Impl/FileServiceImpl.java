@@ -1,6 +1,6 @@
 package hcmute.fit.event_management.service.Impl;
 
-import hcmute.fit.event_management.service.IFileService;
+import hcmute.fit.event_management.service.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -10,11 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Map;
 
 @Service
-public class FileServiceImpl implements IFileService {
+public class FileServiceImpl implements FileService {
 
     @Value("${upload.path}")
     private String uploadPath;

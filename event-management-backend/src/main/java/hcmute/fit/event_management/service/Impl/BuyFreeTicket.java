@@ -3,7 +3,6 @@ package hcmute.fit.event_management.service.Impl;
 import hcmute.fit.event_management.dto.CheckoutDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.repository.*;
-import hcmute.fit.event_management.service.IBuyFreeTicket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class BuyFreeTicket implements IBuyFreeTicket {
+public class BuyFreeTicket implements hcmute.fit.event_management.service.BuyFreeTicket {
     private static final Logger logger = LoggerFactory.getLogger(BuyFreeTicket.class);
 
     @Autowired

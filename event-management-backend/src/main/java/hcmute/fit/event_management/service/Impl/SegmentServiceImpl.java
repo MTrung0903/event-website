@@ -7,8 +7,8 @@ import hcmute.fit.event_management.entity.Segment;
 import hcmute.fit.event_management.entity.Speaker;
 import hcmute.fit.event_management.repository.EventRepository;
 import hcmute.fit.event_management.repository.SegmentRepository;
-import hcmute.fit.event_management.service.ISegmentService;
-import hcmute.fit.event_management.service.ISpeakerService;
+import hcmute.fit.event_management.service.SegmentService;
+import hcmute.fit.event_management.service.SpeakerService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SegmentServiceImpl implements ISegmentService {
+public class SegmentServiceImpl implements SegmentService {
     @Autowired
     private SegmentRepository segmentRepository;
     @Autowired
     private EventRepository eventRepository;
     @Autowired
-    private ISpeakerService speakerService;
+    private SpeakerService speakerService;
     @Autowired
     private Cloudinary cloudinary;
 

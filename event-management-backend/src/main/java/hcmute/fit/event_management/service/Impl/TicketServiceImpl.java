@@ -3,7 +3,7 @@ package hcmute.fit.event_management.service.Impl;
 import hcmute.fit.event_management.dto.TicketDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.repository.*;
-import hcmute.fit.event_management.service.ITicketService;
+import hcmute.fit.event_management.service.TicketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -15,7 +15,7 @@ import payload.Response;
 import java.util.*;
 
 @Service
-public class TicketServiceImpl implements ITicketService {
+public class TicketServiceImpl implements TicketService {
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired

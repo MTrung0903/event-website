@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { useNavigate } from "react-router-dom";
 import { FaMapMarkerAlt, FaChevronDown } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { AiFillCodeSandboxCircle } from "react-icons/ai";
+import { useTranslation } from 'react-i18next';
 import { useAuth } from "../pages/Auth/AuthProvider";
 import { api } from "../pages/Auth/api";
 import Swal from "sweetalert2";
 import UpgradeOrganizerDialog from "./UpgradeOrganizerDialog";
-import { AiFillAlipayCircle } from "react-icons/ai";
-import { AiFillCodeSandboxCircle } from "react-icons/ai";
-import { useTranslation } from 'react-i18next';
+import "./Header.css";
 
 const LocationDropdown = ({ onLocationChange }) => {
   const { t } = useTranslation();
@@ -102,29 +102,20 @@ const LocationDropdown = ({ onLocationChange }) => {
   };
 
   return (
-    <div
-      className="relative flex items-center px-2 sm:px-3 md:px-3 lg:px-4 w-[120px] lg:w-[200px]"
-      ref={dropdownRef}
-    >
-      <FaMapMarkerAlt className="text-sm text-gray-500 cursor-pointer sm:text-base md:text-sm lg:text-base" />
-      <div
-        className="relative flex items-center ml-1 text-xs text-gray-500 cursor-pointer sm:ml-2 md:ml-1 lg:ml-2 sm:text-sm md:text-xs lg:text-sm"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="w-full px-2 py-1 truncate sm:px-3 md:px-2 lg:px-3 sm:py-2 md:py-1 lg:py-2">
+    <div className="location-dropdown" ref={dropdownRef}>
+      <FaMapMarkerAlt className="location-icon" />
+      <div className="location-toggle" onClick={() => setIsOpen(!isOpen)}>
+        <span className="location-text">
           {locations.find((loc) => loc.slug === selected)?.name || selected}
         </span>
-        <FaChevronDown className="ml-1 text-xs text-gray-400 sm:ml-2 md:ml-1 lg:ml-2 sm:text-sm md:text-xs lg:text-sm" />
+        <FaChevronDown className="dropdown-arrow" />
       </div>
       {isOpen && (
-        <div
-          className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg top-full left-4 sm:left-6 md:left-6 lg:left-8 w-36 sm:w-44 md:w-40 lg:w-48"
-          style={{ maxHeight: '200px', overflowY: 'auto' }}
-        >
+        <div className="location-menu">
           {locations.map((city) => (
             <div
               key={city.slug}
-              className="p-2 text-xs text-gray-700 transition cursor-pointer sm:text-sm md:text-xs lg:text-sm hover:bg-orange-200"
+              className="location-item"
               onClick={() => handleSelectCity(city.slug)}
             >
               {city.name}
@@ -136,7 +127,7 @@ const LocationDropdown = ({ onLocationChange }) => {
   );
 };
 
-const SearchBar = () => {
+const SearchBar = ({ onSearch }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,21 +148,19 @@ const SearchBar = () => {
 
   const handleSearch = async () => {
     try {
-      const apiUrl = `http://localhost:8080/api/events/search/by-name-and-city?term=${searchTerm}&city=${selectedLocation}`;
-      const response = await fetch(apiUrl);
+      const response = await fetch(
+        `http://localhost:8080/api/events/search/by-name-and-city?term=${searchTerm}&city=${selectedLocation}`
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch events: ${response.status}`);
       }
       const data = await response.json();
-      if (data && Array.isArray(data)) {
-        if (!searchHistory.includes(searchTerm)) {
+      if (Array.isArray(data)) {
+        if (searchTerm && !searchHistory.includes(searchTerm)) {
           setSearchHistory((prev) => [searchTerm, ...prev.slice(0, 3)]);
         }
-        navigate("/search", {
-          state: { events: data, searchTerm: searchTerm },
-        });
+        navigate("/search", { state: { events: data, searchTerm } });
       } else {
-        console.error("No valid data received from API");
         Swal.fire({
           icon: "error",
           title: t('header.error'),
@@ -179,7 +168,6 @@ const SearchBar = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching events:", error.message);
       Swal.fire({
         icon: "error",
         title: t('header.error'),
@@ -188,35 +176,32 @@ const SearchBar = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
       handleSearch();
     }
   };
 
   return (
-    <div
-      className="relative flex items-center bg-white rounded-full border p-1 sm:p-2 md:p-1 lg:p-2 w-full max-w-xs sm:max-w-md md:max-w-[360px] lg:max-w-2xl text-xs sm:text-[13px] md:text-[12px] lg:text-[13px] h-8 sm:h-10 md:h-9 lg:h-[40px]"
-      ref={searchRef}
-    >
-      <div className="flex items-center px-2 sm:px-3 md:px-3 lg:px-4 w-[180px] sm:w-[220px] md:w-[200px] lg:w-[260px]">
-        <i className="text-sm text-gray-500 fas fa-search sm:text-base md:text-sm lg:text-base"></i>
+    <div className="search-bar" ref={searchRef}>
+      <div className="search-input-container">
+        <i className="fas fa-search search-icon"></i>
         <input
           type="text"
           placeholder={t('header.searchPlaceholder')}
-          className="w-full ml-1 text-xs text-gray-500 outline-none sm:ml-2 md:ml-1 lg:ml-2 sm:text-sm md:text-xs lg:text-sm"
+          className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setShowHistory(true)}
           onKeyPress={handleKeyPress}
         />
       </div>
-      {showHistory && (
-        <div className="absolute top-full left-6 sm:left-8 md:left-8 lg:left-10 w-[180px] sm:w-[220px] md:w-[200px] lg:w-[286px] bg-white border rounded shadow-lg z-50">
+      {showHistory && searchHistory.length > 0 && (
+        <div className="search-history">
           {searchHistory.map((item, index) => (
             <div
               key={index}
-              className="px-4 py-2 text-xs text-gray-700 cursor-pointer hover:bg-gray-100 sm:text-sm md:text-xs lg:text-sm"
+              className="history-item"
               onClick={() => {
                 setSearchTerm(item);
                 setShowHistory(false);
@@ -228,15 +213,10 @@ const SearchBar = () => {
           ))}
         </div>
       )}
-      <div className="h-4 mx-2 border-l border-gray-300 sm:h-6 md:h-5 lg:h-6 sm:mx-3 md:mx-3 lg:mx-4"></div>
-      <div className="relative flex items-center px-2 sm:px-3 md:px-3 lg:px-4">
-        <LocationDropdown onLocationChange={setSelectedLocation} />
-      </div>
-      <button
-        className="ml-auto bg-red-600 text-white rounded-full px-2 sm:px-2 md:px-1 lg:px-2 py-0.5 sm:py-1 md:py-0.5 lg:py-1 hover:bg-red-700"
-        onClick={handleSearch}
-      >
-        <i className="text-sm fas fa-search sm:text-base md:text-sm lg:text-base"></i>
+      <div className="search-divider"></div>
+      <LocationDropdown onLocationChange={setSelectedLocation} />
+      <button className="search-button" onClick={handleSearch}>
+        <i className="fas fa-search"></i>
       </button>
     </div>
   );
@@ -244,33 +224,30 @@ const SearchBar = () => {
 
 const Header = () => {
   const { t } = useTranslation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openUpgradeDialog, setOpenUpgradeDialog] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const menuRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    console.log("User:", user); // Debug user object
     const fetchUnreadCount = async () => {
       if (user && user.userId) {
         try {
           const response = await fetch(`http://localhost:8080/notify/unread-count/${user.userId}`, {
             headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           });
           if (!response.ok) {
             throw new Error(`Failed to fetch unread count: ${response.status}`);
           }
-          const count = await response.json();
-          console.log("Unread count:", count); // Debug count
-          setUnreadCount(count);
+          setUnreadCount(await response.json());
         } catch (error) {
           console.error("Error fetching unread notification count:", error.message);
         }
@@ -278,50 +255,31 @@ const token = localStorage.getItem("token");
     };
 
     fetchUnreadCount();
-  }, [user]);
+  }, [user, token]);
 
-  const handleCreateEventClick = () => {
-    navigate("/createEvent");
-    setIsMobileMenuOpen(false);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleNavigation = (path, closeMobileMenu = true) => {
+    navigate(path);
+    if (closeMobileMenu) setIsMobileMenuOpen(false);
   };
-  const handleHomepage = () => {
-    navigate("/");
-    setIsMobileMenuOpen(false);
-  };
-  const handleLike = () => {
-    navigate("/event-like");
-    setIsMobileMenuOpen(false);
-  };
-  const handleMyInvoices = () => {
-    navigate("/myinvoices");
-    setIsMobileMenuOpen(false);
-  };
-  const handleViewAllTickets = () => {
-    navigate("/view-all-tickets");
-    setIsMobileMenuOpen(false);
-  };
-  const handleDashboard = () => {
-    navigate("/dashboard");
-    setIsMobileMenuOpen(false);
-  };
-  const handleViewProfile = () => {
-    navigate("/view");
-    setIsMobileMenuOpen(false);
-  };
-  const handleNoti = () => {
-    navigate("/notifications");
-    setIsMobileMenuOpen(false);
-  };
-  const handleAdmin = () => {
-    navigate("/admin");
-    setIsMobileMenuOpen(false);
-  };
+
   const handleLogout = async () => {
     try {
       await api.logout();
       logout();
-      navigate("/login");
-      setIsMobileMenuOpen(false);
+      handleNavigation("/login");
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -335,13 +293,17 @@ const token = localStorage.getItem("token");
     {
       icon: "bi-calendar4-event",
       text: t('header.createEvent'),
-      action: handleCreateEventClick,
+      action: () => handleNavigation("/createEvent"),
     },
-    { icon: "bi-heart", text: t('header.likes'), action: handleLike },
     {
-      icon: "bi bi-bell",
+      icon: "bi-heart",
+      text: t('header.likes'),
+      action: () => handleNavigation("/event-like"),
+    },
+    {
+      icon: "bi-bell",
       text: t('header.noti'),
-      action: handleNoti,
+      action: () => handleNavigation("/notifications"),
       badge: unreadCount > 0 ? unreadCount : null,
     },
   ];
@@ -349,106 +311,97 @@ const token = localStorage.getItem("token");
   const menuPopup = [
     {
       title: t('header.manageMyEvents'),
-      action: handleDashboard,
+      action: () => handleNavigation("/dashboard"),
       roles: ["ORGANIZER", "TICKET MANAGER", "EVENT ASSISTANT", "CHECK-IN STAFF"],
     },
-    { title: t('header.invoices'), action: handleMyInvoices, roles: ["ORGANIZER", "ATTENDEE"] },
-    { title: t('header.yourTickets'), action: handleViewAllTickets, roles: ["ORGANIZER", "ATTENDEE"] },
-    { title: t('header.adminDashboard'), action: handleAdmin, roles: ["ADMIN"] },
-    { title: t('header.profile'), action: handleViewProfile, roles: ["ATTENDEE"] },
+    {
+      title: t('header.invoices'),
+      action: () => handleNavigation("/myinvoices"),
+      roles: ["ORGANIZER", "ATTENDEE"],
+    },
+    {
+      title: t('header.yourTickets'),
+      action: () => handleNavigation("/view-all-tickets"),
+      roles: ["ORGANIZER", "ATTENDEE"],
+    },
+    {
+      title: t('header.adminDashboard'),
+      action: () => handleNavigation("/admin"),
+      roles: ["ADMIN"],
+    },
+    {
+      title: t('header.profile'),
+      action: () => handleNavigation("/view"),
+      roles: ["ATTENDEE"],
+    },
     {
       title: t('header.upToOrganizer'),
       action: () => setOpenUpgradeDialog(true),
       roles: ["ATTENDEE"],
     },
-    { title: t('header.logout'), action: handleLogout },
+    {
+      title: t('header.logout'),
+      action: handleLogout,
+    },
   ];
 
   const filteredMenuPopup = menuPopup.filter(
-    (item) =>
-      !item.roles ||
-      item.roles.some((role) => user?.primaryRoles?.includes(role))
+    (item) => !item.roles || item.roles.some((role) => user?.primaryRoles?.includes(role))
   );
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
-      }
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className="fixed top-0 left-0 z-10 w-full bg-white shadow">
-      <div className="flex flex-col items-center justify-between w-full h-auto px-4 py-2 sm:py-3 md:py-3 lg:py-4 sm:h-auto md:h-14 lg:h-16 sm:flex-col md:flex-row">
-        <div className="flex items-center justify-between w-full sm:w-full md:w-auto">
-          <div
-            className="flex text-base font-bold text-red-500 transition duration-300 cursor-pointer sm:text-lg md:text-lg lg:text-2xl hover:text-red-700 font-josefin"
-            onClick={handleHomepage}
-          >
-            <AiFillCodeSandboxCircle className="mx-2 text-[30px]" />
-            Event
+    <header className="header">
+      <div className="header-container">
+        <div className="header-logo-section">
+          <div className="header-logo" onClick={() => handleNavigation("/")}>
+            <AiFillCodeSandboxCircle className="logo-icon" />
+            <span>Event</span>
           </div>
           <button
-            className="text-gray-500 md:hidden"
+            className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <i className="text-base fas fa-bars sm:text-lg md:text-lg"></i>
+            <i className="fas fa-bars"></i>
           </button>
         </div>
-        <div className="w-full mt-2 sm:w-full md:w-auto sm:mt-2 md:mt-0">
+        <div className="header-search">
           <SearchBar />
         </div>
-        <div
-          className="items-center hidden gap-2 mx-0 md:flex md:gap-3 lg:gap-6 md:mx-4"
-          ref={menuRef}
-        >
+        <nav className="header-nav" ref={menuRef}>
           {menuItems.map((item, index) => (
             <a
               key={index}
-              className="flex flex-col items-center text-gray-500 text-[11px] md:text-[12px] lg:text-[13px] font-medium px-2 md:px-3 lg:px-[20px] cursor-pointer hover:text-blue-500 transition duration-300 relative"
+              className="nav-item"
               onClick={item.action}
             >
-              <div className="relative">
-                <i className={`${item.icon} text-sm md:text-base lg:text-lg`}></i>
+              <div className="nav-icon-container">
+                <i className={`${item.icon}`}></i>
                 {item.badge && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
-                    {item.badge}
-                  </span>
+                  <span className="nav-badge">{item.badge}</span>
                 )}
               </div>
-              {item.text}
+              <span>{item.text}</span>
             </a>
           ))}
           <div
-            className="relative flex items-center text-gray-500 text-[11px] md:text-[12px] lg:text-[13px] pl-2 md:pl-3 lg:pl-[20px] cursor-pointer"
+            className="user-menu"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             onMouseEnter={() => setIsMenuOpen(true)}
           >
             {user ? (
               <>
-                <i className="text-sm fa-solid fa-user md:text-base lg:text-lg"></i>
-                <p className="pl-1 md:pl-1 lg:pl-[6px] font-medium hidden lg:block">
-                  {user.email}
-                </p>
-                <i className="bi bi-chevron-down pt-1 md:pt-1 lg:pt-[4px] pl-1 md:pl-1 lg:pl-[3px] cursor-pointer text-xs md:text-sm lg:text-sm"></i>
+                <i className="fa-solid fa-user user-icon"></i>
+                <span className="user-email">{user.email}</span>
+                <i className="bi bi-chevron-down user-dropdown-icon"></i>
                 {isMenuOpen && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-44 md:w-48 lg:w-[205px] bg-white border rounded shadow-lg z-50"
+                    className="user-dropdown"
                     onMouseLeave={() => setIsMenuOpen(false)}
                   >
                     {filteredMenuPopup.map((item, index) => (
                       <a
                         key={index}
-                        className="block px-4 py-3 text-sm font-semibold text-gray-700 transition duration-200 hover:bg-red-50 hover:text-red-600"
+                        className="dropdown-item"
                         onClick={item.action}
                       >
                         {item.title}
@@ -459,49 +412,38 @@ const token = localStorage.getItem("token");
               </>
             ) : (
               <>
-                <a
-                  href="/login"
-                  className="text-gray-500 hover:text-blue-500 px-2 md:px-2px lg:px-2 text-[11px] md:text-[12px] lg:text-[13px]"
-                >
+                <a href="/login" className="auth-link">
                   {t('header.login')}
                 </a>
-                <a
-                  href="/signup"
-                  className="text-gray-500 hover:text-blue-500 px-2 md:px-2 lg:px-2 text-[11px] md:text-[12px] lg:text-[13px]"
-                >
+                <a href="/signup" className="auth-link">
                   {t('header.signup')}
                 </a>
               </>
             )}
           </div>
-        </div>
+        </nav>
         {isMobileMenuOpen && (
-          <div
-            className="w-full py-2 mt-2 bg-white border-t md:hidden"
-            ref={mobileMenuRef}
-          >
+          <nav className="mobile-menu" ref={mobileMenuRef}>
             {menuItems.map((item, index) => (
-            <a
-              key={index}
-              className="flex flex-col items-center text-gray-500 text-[11px] md:text-[12px] lg:text-[13px] font-medium px-2 md:px-3 lg:px-[20px] cursor-pointer hover:text-blue-500 transition duration-300 relative"
-              onClick={item.action}
-            >
-              <div className="relative">
-                <i className={`${item.icon} text-sm md:text-base lg:text-lg`}></i>
-                {item.badge && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              {item.text}
-            </a>
-          ))}
+              <a
+                key={index}
+                className="mobile-nav-item"
+                onClick={item.action}
+              >
+                <div className="nav-icon-container">
+                  <i className={`${item.icon}`}></i>
+                  {item.badge && (
+                    <span className="nav-badge">{item.badge}</span>
+                  )}
+                </div>
+                <span>{item.text}</span>
+              </a>
+            ))}
             {user ? (
               filteredMenuPopup.map((item, index) => (
                 <a
                   key={index}
-                  className="block px-4 py-2 text-xs text-gray-700 cursor-pointer hover:bg-gray-100 sm:text-sm"
+                  className="mobile-dropdown-item"
                   onClick={item.action}
                 >
                   {item.title}
@@ -509,28 +451,22 @@ const token = localStorage.getItem("token");
               ))
             ) : (
               <>
-                <a
-                  href="/login"
-                  className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 sm:text-sm"
-                >
+                <a href="/login" className="mobile-auth-link">
                   {t('header.login')}
                 </a>
-                <a
-                  href="/signup"
-                  className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 sm:text-sm"
-                >
+                <a href="/signup" className="mobile-auth-link">
                   {t('header.signup')}
                 </a>
               </>
             )}
-          </div>
+          </nav>
         )}
         <UpgradeOrganizerDialog
           open={openUpgradeDialog}
           onClose={() => setOpenUpgradeDialog(false)}
         />
       </div>
-    </div>
+    </header>
   );
 };
 

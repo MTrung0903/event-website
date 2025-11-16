@@ -1,7 +1,7 @@
 package hcmute.fit.event_management.controller.admin;
 
 import hcmute.fit.event_management.dto.PermissionDTO;
-import hcmute.fit.event_management.service.IPermissionService;
+import hcmute.fit.event_management.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/permissions")
 public class PermissionController {
     @Autowired
-    private IPermissionService permissionService;
+    private PermissionService permissionService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")

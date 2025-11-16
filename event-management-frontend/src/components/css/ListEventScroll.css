@@ -1,0 +1,287 @@
+/* Container chính của component */
+.list-event-scroll-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+  position: relative;
+}
+
+/* Header của danh sách sự kiện */
+.list-event-scroll-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.list-event-scroll-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+  font-family: 'Montserrat', sans-serif;
+}
+
+@media (min-width: 640px) {
+  .list-event-scroll-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .list-event-scroll-title {
+    font-size: 24px;
+  }
+}
+
+/* Link xem tất cả sự kiện */
+.view-all-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+.view-all-container:hover,
+.view-all-container:hover .view-all-text {
+  color: #ef4444;
+}
+
+.view-all-text {
+  font-size: 12px;
+}
+
+@media (min-width: 640px) {
+  .view-all-text {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .view-all-text {
+    font-size: 15px;
+  }
+}
+
+.view-all-icon {
+  font-size: 12px;
+}
+
+@media (min-width: 640px) {
+  .view-all-icon {
+    font-size: 14px;
+  }
+}
+
+/* Container cho danh sách sự kiện */
+.events-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #e5e7eb;
+}
+
+@media (min-width: 640px) {
+  .events-list {
+    gap: 16px;
+  }
+}
+
+/* Card sự kiện */
+.event-card {
+  flex: 0 0 256px;
+  min-height: 360px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.event-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #f3f4f6;
+}
+
+@media (min-width: 640px) {
+  .event-card {
+    flex: 0 0 288px;
+    min-height: 380px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .event-card {
+    flex: 0 0 300px;
+    min-height: 400px;
+  }
+}
+
+/* Hình ảnh sự kiện */
+.event-image-container {
+  width: 100%;
+  height: 128px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .event-image-container {
+    height: 144px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .event-image-container {
+    height: 160px;
+  }
+}
+
+.event-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+.event-image-default {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Nội dung card */
+.event-content {
+  padding: 12px;
+}
+
+@media (min-width: 640px) {
+  .event-content {
+    padding: 16px;
+  }
+}
+
+.event-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .event-title {
+    font-size: 18px;
+  }
+}
+
+.event-description {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+@media (min-width: 640px) {
+  .event-description {
+    font-size: 14px;
+    margin-top: 8px;
+  }
+}
+
+.event-info {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (min-width: 640px) {
+  .event-info {
+    font-size: 14px;
+  }
+}
+
+.event-info-icon {
+  font-size: 16px;
+}
+
+/* Tags */
+.event-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px;
+}
+
+@media (min-width: 640px) {
+  .event-tags {
+    gap: 8px;
+    padding: 16px;
+  }
+}
+
+.event-tag {
+  background-color: #f3f4f6;
+  color: #374151;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 9999px;
+}
+
+@media (min-width: 640px) {
+  .event-tag {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+.event-tag-empty {
+  color: #4b5563;
+  font-size: 10px;
+}
+
+@media (min-width: 640px) {
+  .event-tag-empty {
+    font-size: 12px;
+  }
+}
+
+/* Loading và Error */
+.loading-container,
+.error-container,
+.no-events-container {
+  padding: 16px;
+  text-align: center;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .error-text {
+    font-size: 16px;
+  }
+}
+
+.no-events-text {
+  color: #4b5563;
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .no-events-text {
+    font-size: 16px;
+  }
+}

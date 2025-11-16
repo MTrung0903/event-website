@@ -3,7 +3,7 @@ package hcmute.fit.event_management.service.Impl;
 import com.itextpdf.layout.properties.UnitValue;
 import hcmute.fit.event_management.entity.Booking;
 import hcmute.fit.event_management.entity.BookingDetails;
-import hcmute.fit.event_management.service.IInvoiceService;
+import hcmute.fit.event_management.service.InvoiceService;
 import org.springframework.stereotype.Service;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -14,7 +14,7 @@ import com.itextpdf.layout.element.Paragraph;
 import java.io.ByteArrayOutputStream;
 
 @Service
-public class InvoiceServiceImpl implements IInvoiceService {
+public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public byte[] generatePdfInvoice(Booking booking) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -4,7 +4,7 @@ import hcmute.fit.event_management.entity.Sponsor;
 import hcmute.fit.event_management.entity.SponsorEvent;
 import hcmute.fit.event_management.entity.keys.SponsorEventId;
 import hcmute.fit.event_management.repository.SponsorEventRepository;
-import hcmute.fit.event_management.service.ISponsorEventService;
+import hcmute.fit.event_management.service.SponsorEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SponsorEventServiceImpl implements ISponsorEventService {
+public class SponsorEventServiceImpl implements SponsorEventService {
     @Autowired
     SponsorEventRepository sponsorEventRepository;
 

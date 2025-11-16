@@ -2,7 +2,7 @@ package hcmute.fit.event_management.service.Impl;
 
 import hcmute.fit.event_management.entity.BookingDetails;
 import hcmute.fit.event_management.repository.BookingDetailsRepository;
-import hcmute.fit.event_management.service.IBookingDetailsService;
+import hcmute.fit.event_management.service.BookingDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Service
-public class BookingDetailsServiceImpl implements IBookingDetailsService {
+public class BookingDetailsServiceImpl implements BookingDetailsService {
     @Autowired
     private BookingDetailsRepository bookingDetailsRepository;
 

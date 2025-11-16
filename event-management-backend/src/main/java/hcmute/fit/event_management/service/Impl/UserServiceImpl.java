@@ -8,7 +8,7 @@ import hcmute.fit.event_management.dto.UserDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.entity.keys.AccountRoleId;
 import hcmute.fit.event_management.repository.*;
-import hcmute.fit.event_management.service.IUserService;
+import hcmute.fit.event_management.service.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -49,10 +49,6 @@ public class UserServiceImpl implements IUserService {
     private MessageRepository messageRepository;
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     private UserDTO convertToDTO(User user, Optional<List<UserRole>> userRolesOpt) {
         UserDTO userDTO = new UserDTO();

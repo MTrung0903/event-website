@@ -1,22 +1,18 @@
 package hcmute.fit.event_management.controller.admin;
 
 import hcmute.fit.event_management.dto.*;
-import hcmute.fit.event_management.entity.Organizer;
-import hcmute.fit.event_management.entity.User;
-import hcmute.fit.event_management.service.IFollowService;
-import hcmute.fit.event_management.service.IUserService;
+import hcmute.fit.event_management.service.FollowService;
+import hcmute.fit.event_management.service.UserService;
 import hcmute.fit.event_management.service.Impl.AuthServiceImpl;
 import hcmute.fit.event_management.service.Impl.EmailServiceImpl;
 import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.Email;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import payload.Response;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,13 +22,13 @@ public class AuthController {
     private AuthServiceImpl authService;
 
     @Autowired
-    private IUserService userService;
+    private UserService userService;
 
     @Autowired
     private EmailServiceImpl emailService;
 
     @Autowired
-    private IFollowService followService;
+    private FollowService followService;
 
     @PostMapping("/login")
     public ResponseEntity<Response> login(@RequestBody UserDTO userDTO) {

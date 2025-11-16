@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
             userId: decoded.userId,
             roles: decoded.roles || [],
             permissions: decoded.permissions || [],
-            primaryRoles: getPrimaryRoles(decoded.roles || []), // Thay primaryRole thành primaryRoles
+            primaryRoles: getPrimaryRoles(decoded.roles || []),
           });
         } else {
           localStorage.removeItem('token');

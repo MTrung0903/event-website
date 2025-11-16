@@ -6,8 +6,7 @@ import hcmute.fit.event_management.entity.Message;
 import hcmute.fit.event_management.entity.User;
 import hcmute.fit.event_management.repository.MessageRepository;
 import hcmute.fit.event_management.repository.UserRepository;
-import hcmute.fit.event_management.service.IMessageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import hcmute.fit.event_management.service.MessageService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +19,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class MessageServiceImpl implements IMessageService {
-    @Autowired
-    private MessageRepository messageRepository;
+public class MessageServiceImpl implements MessageService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final MessageRepository messageRepository;
+
+
+    private final UserRepository userRepository;
+
+    public MessageServiceImpl(MessageRepository messageRepository, UserRepository userRepository) {
+        this.messageRepository = messageRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public Message createMessage(MessageDTO messageDTO) {
@@ -49,8 +53,8 @@ public class MessageServiceImpl implements IMessageService {
         try {
             ZonedDateTime zonedDateTime = ZonedDateTime.parse(timestamp, DateTimeFormatter.ISO_DATE_TIME);
             ZonedDateTime localTime = zonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Ho_Chi_Minh"));
-            LocalDateTime localDateTime = localTime.toLocalDateTime();
-            return localDateTime;
+
+            return localTime.toLocalDateTime();
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid timestamp format: " + timestamp, e);
         }
@@ -84,7 +88,7 @@ public class MessageServiceImpl implements IMessageService {
             }
 
             List<User> chattedUsers = messageRepository.findUsersChattedWith(userId);
-            List<UserDTO> userDTOs = chattedUsers.stream()
+            return  chattedUsers.stream()
                     .filter(user -> user.getUserId() != userId)
                     .map(user -> {
                         UserDTO userDTO = new UserDTO();
@@ -98,7 +102,7 @@ public class MessageServiceImpl implements IMessageService {
                     })
                     .collect(Collectors.toList());
 
-            return userDTOs;
+
         } catch (DataAccessException e) {
             throw new RuntimeException("Failed to fetch chatted users due to database error", e);
         } catch (Exception e) {

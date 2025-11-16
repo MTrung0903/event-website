@@ -8,25 +8,32 @@ import hcmute.fit.event_management.entity.keys.FavoriteEventId;
 import hcmute.fit.event_management.repository.EventRepository;
 import hcmute.fit.event_management.repository.FavoriteEventRepository;
 import hcmute.fit.event_management.repository.UserRepository;
-import hcmute.fit.event_management.service.IFavoriteEventService;
-import org.springframework.beans.factory.annotation.Autowired;
+import hcmute.fit.event_management.service.FavoriteEventService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
-public class FavoriteEventServiceImpl implements IFavoriteEventService {
-    @Autowired
-    private FavoriteEventRepository favoriteEventRepository;
+public class FavoriteEventServiceImpl implements FavoriteEventService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final FavoriteEventRepository favoriteEventRepository;
 
-    @Autowired
-    private EventRepository eventRepository;
+
+    private final UserRepository userRepository;
+
+
+    private final EventRepository eventRepository;
+
+    public FavoriteEventServiceImpl(EventRepository eventRepository,
+                                    FavoriteEventRepository favoriteEventRepository,
+                                    UserRepository userRepository) {
+        this.eventRepository = eventRepository;
+        this.favoriteEventRepository = favoriteEventRepository;
+        this.userRepository = userRepository;
+    }
+
     @Override
     public void saveFavoriteEvent(int userId, int eventId) {
         User user = userRepository.findById(userId)
@@ -48,7 +55,7 @@ public class FavoriteEventServiceImpl implements IFavoriteEventService {
     @Override
     public void removeFavoriteEvent(int userId, int eventId) {
         Optional<FavoriteEvent> event = favoriteEventRepository.findByUserIdAndEventId(userId, eventId);
-        if (!event.isPresent()) {
+        if (event.isEmpty()) {
             throw new RuntimeException("Event not found");
         }else{
             favoriteEventRepository.delete(event.get());

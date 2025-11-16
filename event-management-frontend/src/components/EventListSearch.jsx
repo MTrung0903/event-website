@@ -3,6 +3,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaEye } from "react-icons/fa6";
 import { useTranslation } from 'react-i18next';
+import './EventList.css';
 
 const isValidUrl = (url) => {
   try {
@@ -44,49 +45,49 @@ const EventList = ({ event }) => {
   };
 
   if (!event || event.length === 0) {
-  return (
-    <div className="max-w-5xl mx-auto p-6 border-l-2 text-center">
-      <p className="text-gray-500 text-lg">{t('eventListSearch.noEvents')}</p>
-    </div>
-  );
-}
+    return (
+      <div className="event-list-container event-list-no-events">
+        <p className="no-events-text">{t('eventListSearch.noEvents')}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-[#EEEEEE]">
-      <div className="space-y-6">
+    <div className="event-list-container">
+      <div className="event-list">
         {event.map((eventItem) => (
           <div
             key={eventItem.eventId}
-            className="flex items-center w-[730px] bg-white shadow rounded-[8px] overflow-hidden p-4 hover:shadow-lg transition-all duration-300 border border-gray-200 hover:cursor-pointer"
+            className="event-card"
             onClick={() => handleEventClick(eventItem.eventId)}
           >
             {imageError[eventItem.eventId] ||
               !eventItem.eventImages ||
               eventItem.eventImages.length === 0 ||
               !isValidUrl(eventItem.eventImages[0]) ? (
-              <div className="w-44 h-28 bg-gray-200 flex items-center justify-center rounded-lg">
-                <p className="text-gray-500 text-sm">{t('eventListSearch.noImages')}</p>
+              <div className="event-image-placeholder">
+                <p className="no-image-text">{t('eventListSearch.noImages')}</p>
               </div>
             ) : (
               <img
                 src={eventItem.eventImages[0]}
                 alt={eventItem.eventName}
-                className="w-44 h-28 object-cover rounded-lg"
+                className="event-image"
                 onError={() => handleImageError(eventItem.eventId)}
               />
             )}
-            <div className="ml-4 flex-1 text-[13px]">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">{truncateText(eventItem.eventName, 55)}</h3>
-              <div className="flex space-x-6 my-2">
-                <p className="font-medium text-red-500 bg-blue-100 px-[4px] py-[2px] rounded-[4px]">{eventItem.eventType}</p>
-                <p className="text-gray-500 px-[4px] py-[2px]">{eventItem.eventStart}</p>
+            <div className="event-details">
+              <h3 className="event-title">{truncateText(eventItem.eventName, 55)}</h3>
+              <div className="event-meta">
+                <p className="event-type">{eventItem.eventType}</p>
+                <p className="event-date">{eventItem.eventStart}</p>
               </div>
-              <p className="text-gray-600">
-                <i className="fa-solid fa-location-dot mr-2 text-orange-300"></i>
+              <p className="event-location">
+                <i className="fa-solid fa-location-dot event-location-icon"></i>
                 {getLocation(eventItem.eventLocation)}
               </p>
-              <div className="flex items-center text-gray-600 mt-1">
-                <FaUserFriends className="mr-2 text-blue-500" /> {eventItem.eventHost}
+              <div className="event-host">
+                <FaUserFriends className="host-icon" /> {eventItem.eventHost}
               </div>
             </div>
           </div>

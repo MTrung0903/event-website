@@ -3,7 +3,7 @@ package hcmute.fit.event_management.service.Impl;
 import hcmute.fit.event_management.dto.EventTypeDTO;
 import hcmute.fit.event_management.entity.EventType;
 import hcmute.fit.event_management.repository.EventTypeRepository;
-import hcmute.fit.event_management.service.IEventTypeService;
+import hcmute.fit.event_management.service.EventTypeService;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class EventTypeServiceImpl implements IEventTypeService {
+public class EventTypeServiceImpl implements EventTypeService {
 
     private final EventTypeRepository eventTypeRepository;
 
@@ -69,9 +69,9 @@ public class EventTypeServiceImpl implements IEventTypeService {
 
     @Override
     public void deleteEventType(Long id) {
-        EventType eventType = eventTypeRepository.findById(id).orElse(null);
+        EventType eventType = eventTypeRepository.findById(id).isPresent() ? eventTypeRepository.findById(id).get() : null;
 
-        eventTypeRepository.delete(eventType);
+        if(eventType != null )eventTypeRepository.delete(eventType);
     }
 
     @Override

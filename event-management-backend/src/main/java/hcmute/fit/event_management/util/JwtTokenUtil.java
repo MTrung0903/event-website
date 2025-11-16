@@ -4,8 +4,6 @@ import hcmute.fit.event_management.dto.UserDetail;
 import hcmute.fit.event_management.entity.Permission;
 import hcmute.fit.event_management.entity.User;
 import hcmute.fit.event_management.repository.UserRepository;
-import hcmute.fit.event_management.repository.UserRoleRepository;
-import hcmute.fit.event_management.service.IUserService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

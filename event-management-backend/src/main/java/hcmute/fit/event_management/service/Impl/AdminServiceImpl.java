@@ -4,21 +4,20 @@ import hcmute.fit.event_management.dto.DashboardStatsDTO;
 import hcmute.fit.event_management.dto.EventDTO;
 import hcmute.fit.event_management.dto.TransactionDTO;
 import hcmute.fit.event_management.entity.*;
+import hcmute.fit.event_management.mapper.EventMapper;
 import hcmute.fit.event_management.repository.*;
-import hcmute.fit.event_management.service.ICheckInTicketService;
-import hcmute.fit.event_management.service.IEventService;
+import hcmute.fit.event_management.service.CheckInTicketService;
+import hcmute.fit.event_management.service.EventService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import payload.PageResponse;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,10 +44,13 @@ public class AdminServiceImpl {
     UserRepository userRepo;
 
     @Autowired
-    IEventService eventService;
+    EventService eventService;
 
     @Autowired
-    ICheckInTicketService checkInTicketService;
+    CheckInTicketService checkInTicketService;
+
+    @Autowired
+    private EventMapper eventMapper;
 
     public DashboardStatsDTO getDashboardStats(Integer year) {
         int currentMonth = LocalDate.now().getMonthValue();
@@ -112,7 +114,7 @@ public class AdminServiceImpl {
                             ? booking.getTransaction().getTransactionAmount() * 0.03
                             : 0)
                     .sum();
-            EventDTO eventDTO = eventService.convertToDTO(event);
+            EventDTO eventDTO = eventMapper.toDto(event);
             eventDTO.setSold(sold);
             eventDTO.setEventRevenue(eventRevenue);
             return eventDTO;
@@ -220,7 +222,7 @@ public class AdminServiceImpl {
             Event event = (Event) result[0];
             Long sold = (Long) result[1];
             Double eventRevenue = (Double) result[2];
-            EventDTO eventDTO = eventService.convertToDTO(event);
+            EventDTO eventDTO = eventMapper.toDto(event);
             eventDTO.setSold(sold);
             eventDTO.setEventRevenue(eventRevenue);
             return eventDTO;

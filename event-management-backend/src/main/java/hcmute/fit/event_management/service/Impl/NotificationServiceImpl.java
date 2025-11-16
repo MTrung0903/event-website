@@ -5,9 +5,8 @@ import hcmute.fit.event_management.entity.Notification;
 import hcmute.fit.event_management.entity.User;
 import hcmute.fit.event_management.repository.NotificationRepository;
 import hcmute.fit.event_management.repository.UserRepository;
-import hcmute.fit.event_management.service.INotificationService;
+import hcmute.fit.event_management.service.NotificationService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +15,18 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class NotificationServiceImpl implements INotificationService {
-    @Autowired
-    private NotificationRepository notificationRepository;
+public class NotificationServiceImpl implements NotificationService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+
+
+    private final UserRepository userRepository;
+
+    public NotificationServiceImpl(NotificationRepository notificationRepository,
+                                   UserRepository userRepository) {
+        this.notificationRepository = notificationRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public Notification createNotification(NotificationDTO notificationDTO) {

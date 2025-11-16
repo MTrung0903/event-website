@@ -1,21 +1,20 @@
 package hcmute.fit.event_management.controller.admin;
 
 import hcmute.fit.event_management.dto.RoleDTO;
-import hcmute.fit.event_management.service.IRoleService;
+import hcmute.fit.event_management.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import payload.Response;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
     @Autowired
-    private IRoleService roleService;
+    private RoleService roleService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")

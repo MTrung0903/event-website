@@ -1,0 +1,283 @@
+.footer {
+  background-color: white;
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 24px;
+  padding-top: 96px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.footer-logo {
+  display: flex;
+  justify-content: center;
+  color: #F87171;
+}
+
+@media (min-width: 640px) {
+  .footer-logo {
+    justify-content: flex-start;
+  }
+}
+
+.footer-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.footer-description {
+  margin-top: 24px;
+  max-width: 448px;
+  text-align: center;
+  line-height: 1.625;
+  color: #6B7280;
+}
+
+@media (min-width: 640px) {
+  .footer-description {
+    max-width: 256px;
+    text-align: left;
+  }
+}
+
+.footer-social-links {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .footer-social-links {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 768px) {
+  .footer-social-links {
+    gap: 32px;
+  }
+}
+
+.social-link {
+  color: #B91C1C;
+  transition: color 0.2s;
+}
+
+.social-link:hover {
+  color: rgba(185, 28, 28, 0.75);
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.footer-links-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 640px) {
+  .footer-links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .footer-links-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.footer-section {
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .footer-section {
+    text-align: left;
+  }
+}
+
+.footer-section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #EF4444;
+}
+
+.footer-section-links {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.footer-link {
+  color: #374151;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: rgba(55, 65, 81, 0.75);
+}
+
+.footer-contact-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .footer-contact-link {
+    justify-content: flex-start;
+  }
+}
+
+.contact-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #111827;
+}
+
+.contact-text {
+  flex: 1;
+  color: #374151;
+}
+
+.footer-contact-address {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .footer-contact-address {
+    justify-content: flex-start;
+  }
+}
+
+.contact-address {
+  margin-top: -2px;
+  flex: 1;
+  color: #374151;
+  font-style: normal;
+}
+
+.footer-bottom {
+  margin-top: 48px;
+  border-top: 1px solid #F3F4F6;
+  padding-top: 24px;
+}
+
+.footer-bottom-content {
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .footer-bottom-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+  }
+}
+
+.footer-copyright {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #6B7280;
+}
+
+@media (min-width: 640px) {
+  .footer-copyright {
+    margin-top: 0;
+    order: -1;
+  }
+}
+
+.footer-legal {
+  font-size: 14px;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.language-selector {
+  position: relative;
+  width: 128px;
+}
+
+.language-select {
+  width: 100%;
+  appearance: none;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  background-color: white;
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #374151;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+}
+
+.language-select:focus {
+  outline: none;
+  /* ring: 2px solid #EF4444; */
+  border-color: #F87171;
+}
+
+.language-select:hover {
+  background-color: #F9FAFB;
+  border-color: #F87171;
+}
+
+.language-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #6B7280;
+}
+
+.footer-rights-text {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .footer-rights-text {
+    display: inline;
+  }
+}
+
+.footer-legal-link {
+  color: #DC2626;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.footer-legal-link:hover {
+  color: rgba(220, 38, 38, 0.75);
+}

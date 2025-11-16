@@ -1,43 +1,41 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import './Footer.css';
 
 const Footer = () => {
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
-
   useEffect(() => {
     console.log('Current language:', i18n.language);
     console.log('Translated title:', t('footer.title'));
     setLang(i18n.language);
   }, [i18n.language, t]);
-
   const handleLanguageChange = (event) => {
     console.log('Language selected:', event.target.value);
     i18n.changeLanguage(event.target.value);
   };
-
   return (
-    <footer className="bg-white">
-      <div className="mx-auto max-w-screen-xl px-4 pb-6 pt-16 sm:px-6 lg:px-8 lg:pt-24">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+    <footer className="footer">
+      <div className="footer-container">
+        <div className="footer-grid">
           <div>
-            <div className="flex justify-center text-red-600 sm:justify-start text-red-400">
-              <h2 className="text-3xl font-semibold">{t('footer.title')}</h2>
+            <div className="footer-logo">
+              <h2 className="footer-title">{t('footer.title')}</h2>
             </div>
-            <p className="mt-6 max-w-md text-center leading-relaxed text-gray-500 sm:max-w-xs sm:text-left">
+            <p className="footer-description">
               {t('footer.description')}
             </p>
-            <ul className="mt-8 flex justify-center gap-6 sm:justify-start md:gap-8">
+            <ul className="footer-social-links">
               <li>
                 <a
                   href="#"
                   rel="noreferrer"
                   target="_blank"
-                  className="text-red-700 transition hover:text-red-900/75"
+                  className="social-link"
                 >
                   <span className="sr-only">Facebook</span>
                   <svg
-                    className="size-6"
+                    className="social-icon"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -55,11 +53,11 @@ const Footer = () => {
                   href="#"
                   rel="noreferrer"
                   target="_blank"
-                  className="text-red-700 transition hover:text-red-900/75"
+                  className="social-link"
                 >
                   <span className="sr-only">Instagram</span>
                   <svg
-                    className="size-6"
+                    className="social-icon"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -77,11 +75,11 @@ const Footer = () => {
                   href="#"
                   rel="noreferrer"
                   target="_blank"
-                  className="text-red-700 transition hover:text-red-900/75"
+                  className="social-link"
                 >
                   <span className="sr-only">Twitter</span>
                   <svg
-                    className="size-6"
+                    className="social-icon"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -97,11 +95,11 @@ const Footer = () => {
                   href="#"
                   rel="noreferrer"
                   target="_blank"
-                  className="text-red-700 transition hover:text-red-900/75"
+                  className="social-link"
                 >
                   <span className="sr-only">GitHub</span>
                   <svg
-                    className="size-6"
+                    className="social-icon"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -119,11 +117,11 @@ const Footer = () => {
                   href="#"
                   rel="noreferrer"
                   target="_blank"
-                  className="text-red-700 transition hover:text-red-900/75"
+                  className="social-link"
                 >
                   <span className="sr-only">Dribbble</span>
                   <svg
-                    className="size-6"
+                    className="social-icon"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -138,73 +136,73 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2">
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-red-500">{t('footer.aboutUs')}</p>
-              <ul className="mt-8 space-y-4 text-sm">
+          <div className="footer-links-grid">
+            <div className="footer-section">
+              <p className="footer-section-title">{t('footer.aboutUs')}</p>
+              <ul className="footer-section-links">
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.companyHistory')}
                   </a>
                 </li>
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.meetTheTeam')}
                   </a>
                 </li>
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.employeeHandbook')}
                   </a>
                 </li>
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.careers')}
                   </a>
                 </li>
               </ul>
             </div>
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-red-500">{t('footer.ourServices')}</p>
-              <ul className="mt-8 space-y-4 text-sm">
+            <div className="footer-section">
+              <p className="footer-section-title">{t('footer.ourServices')}</p>
+              <ul className="footer-section-links">
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.managementEvent')}
                   </a>
                 </li>
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.marketing')}
                   </a>
                 </li>
               </ul>
             </div>
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-red-500">{t('footer.helpfulLinks')}</p>
-              <ul className="mt-8 space-y-4 text-sm">
+            <div className="footer-section">
+              <p className="footer-section-title">{t('footer.helpfulLinks')}</p>
+              <ul className="footer-section-links">
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.faqs')}
                   </a>
                 </li>
                 <li>
-                  <a className="text-gray-700 transition hover:text-gray-700/75" href="#">
+                  <a className="footer-link" href="#">
                     {t('footer.support')}
                   </a>
                 </li>
               </ul>
             </div>
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-red-500">{t('footer.contactUs')}</p>
-              <ul className="mt-8 space-y-4 text-sm">
+            <div className="footer-section">
+              <p className="footer-section-title">{t('footer.contactUs')}</p>
+              <ul className="footer-section-links">
                 <li>
                   <a
-                    className="flex items-center justify-center gap-1.5 ltr:sm:justify-start rtl:sm:justify-end"
+                    className="footer-contact-link"
                     href="#"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="size-5 shrink-0 text-gray-900"
+                      className="contact-icon"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -216,17 +214,17 @@ const Footer = () => {
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                       />
                     </svg>
-                    <span className="flex-1 text-gray-700">{t('footer.email')}</span>
+                    <span className="contact-text">{t('footer.email')}</span>
                   </a>
                 </li>
                 <li>
                   <a
-                    className="flex items-center justify-center gap-1.5 ltr:sm:justify-start rtl:sm:justify-end"
+                    className="footer-contact-link"
                     href="#"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="size-5 shrink-0 text-gray-900"
+                      className="contact-icon"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -238,13 +236,13 @@ const Footer = () => {
                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                       />
                     </svg>
-                    <span className="flex-1 text-gray-700">{t('footer.phone')}</span>
+                    <span className="contact-text">{t('footer.phone')}</span>
                   </a>
                 </li>
-                <li className="flex items-start justify-center gap-1.5 ltr:sm:justify-start rtl:sm:justify-end">
+                <li className="footer-contact-address">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="size-5 shrink-0 text-gray-900"
+                    className="contact-icon"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -261,7 +259,7 @@ const Footer = () => {
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  <address className="-mt-0.5 flex-1 not-italic text-gray-700">
+                  <address className="contact-address">
                     {t('footer.address')}
                   </address>
                 </li>
@@ -269,26 +267,26 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="mt-12 border-t border-gray-100 pt-6">
-          <div className="text-center sm:flex sm:justify-between sm:text-left sm:items-center">
-            <p className="mt-4 text-sm text-gray-500 sm:order-first sm:mt-0">
+        <div className="footer-bottom">
+          <div className="footer-bottom-content">
+            <p className="footer-copyright">
               &copy; 2022 Company Name
             </p>
-            <div className="text-sm text-gray-500 flex items-center gap-4">
+            <div className="footer-legal">
               <div>
                 <label htmlFor="language" className="sr-only">Language</label>
-                <div className="relative w-32">
+                <div className="language-selector">
                   <select
                     id="language"
                     value={i18n.language}
                     onChange={handleLanguageChange}
-                    className="block w-full appearance-none rounded-lg border border-gray-300 bg-white py-1 px-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-400 transition duration-200 hover:bg-gray-50 hover:border-red-400 sm:text-sm"
+                    className="language-select"
                   >
                     <option value="en">English</option>
                     <option value="vi">Tiếng Việt</option>
                   </select>
                   <svg
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500"
+                    className="language-arrow"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -302,12 +300,12 @@ const Footer = () => {
                 </div>
               </div>
               <p>
-                <span className="block sm:inline">{t('footer.allRightsReserved')}</span>
-                <a className="inline-block text-red-600 underline transition hover:text-red-600/75" href="#">
+                <span className="footer-rights-text">{t('footer.allRightsReserved')}</span>
+                <a className="footer-legal-link" href="#">
                   {t('footer.terms')}
                 </a>
                 <span>·</span>
-                <a className="inline-block text-red-600 underline transition hover:text-red-600/75" href="#">
+                <a className="footer-legal-link" href="#">
                   {t('footer.privacy')}
                 </a>
               </p>
@@ -318,5 +316,4 @@ const Footer = () => {
     </footer>
   );
 };
-
 export default Footer;

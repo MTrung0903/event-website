@@ -3,7 +3,7 @@ package hcmute.fit.event_management.service.Impl;
 import hcmute.fit.event_management.dto.PermissionDTO;
 import hcmute.fit.event_management.entity.Permission;
 import hcmute.fit.event_management.repository.PermissionRepository;
-import hcmute.fit.event_management.service.IPermissionService;
+import hcmute.fit.event_management.service.PermissionService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PermissionServiceImpl implements IPermissionService {
+public class PermissionServiceImpl implements PermissionService {
     @Autowired
     private PermissionRepository permissionRepository;
 

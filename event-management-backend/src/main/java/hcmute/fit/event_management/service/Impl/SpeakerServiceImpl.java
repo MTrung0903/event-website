@@ -3,7 +3,7 @@ package hcmute.fit.event_management.service.Impl;
 import hcmute.fit.event_management.dto.SpeakerDTO;
 import hcmute.fit.event_management.entity.Speaker;
 import hcmute.fit.event_management.repository.SpeakerRepository;
-import hcmute.fit.event_management.service.ISpeakerService;
+import hcmute.fit.event_management.service.SpeakerService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SpeakerServiceImpl implements ISpeakerService {
+public class SpeakerServiceImpl implements SpeakerService {
     @Autowired
     private SpeakerRepository speakerRepository;
 

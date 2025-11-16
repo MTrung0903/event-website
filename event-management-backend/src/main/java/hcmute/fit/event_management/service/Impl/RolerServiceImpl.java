@@ -6,7 +6,7 @@ import hcmute.fit.event_management.entity.Permission;
 import hcmute.fit.event_management.entity.Role;
 import hcmute.fit.event_management.repository.PermissionRepository;
 import hcmute.fit.event_management.repository.RoleRepository;
-import hcmute.fit.event_management.service.IRoleService;
+import hcmute.fit.event_management.service.RoleService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RolerServiceImpl implements IRoleService {
+public class RolerServiceImpl implements RoleService {
     @Autowired
     private RoleRepository roleRepository;
     @Autowired

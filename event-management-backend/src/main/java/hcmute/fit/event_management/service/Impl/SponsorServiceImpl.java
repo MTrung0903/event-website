@@ -5,7 +5,7 @@ import hcmute.fit.event_management.entity.Sponsor;
 import hcmute.fit.event_management.entity.SponsorEvent;
 import hcmute.fit.event_management.repository.SponsorEventRepository;
 import hcmute.fit.event_management.repository.SponsorRepository;
-import hcmute.fit.event_management.service.ISponsorService;
+import hcmute.fit.event_management.service.SponsorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class SponsorServiceImpl implements ISponsorService {
+public class SponsorServiceImpl implements SponsorService {
 
     @Autowired
     SponsorRepository sponsorRepository;
     @Autowired
     SponsorEventRepository sponsorEventRepository;
     @Autowired
-    CloudinaryService cloudinaryService;
+    CloudinaryServiceImpl cloudinaryServiceImpl;
 
     @Override
     public <S extends Sponsor> List<S> findAll(Example<S> example) {
@@ -82,7 +82,7 @@ public class SponsorServiceImpl implements ISponsorService {
             sponsorEventDTO.setSponsorName(sponsorEvent.getSponsor().getSponsorName());
             sponsorEventDTO.setSponsorEmail(sponsorEvent.getSponsor().getSponsorEmail());
             sponsorEventDTO.setSponsorAddress(sponsorEvent.getSponsor().getSponsorAddress());
-            sponsorEventDTO.setSponsorLogo(cloudinaryService.getFileUrl(sponsorEvent.getSponsor().getSponsorLogo()));
+            sponsorEventDTO.setSponsorLogo(cloudinaryServiceImpl.getFileUrl(sponsorEvent.getSponsor().getSponsorLogo()));
             sponsorEventDTO.setSponsorPhone(sponsorEvent.getSponsor().getSponsorPhone());
             sponsorEventDTO.setSponsorWebsite(sponsorEvent.getSponsor().getSponsorWebsite());
             sponsorEventDTO.setSponsorRepresentativeName(sponsorEvent.getSponsor().getSponsorRepresentativeName());

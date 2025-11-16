@@ -2,7 +2,7 @@ package hcmute.fit.event_management.service.Impl;
 
 import hcmute.fit.event_management.entity.Transaction;
 import hcmute.fit.event_management.repository.TransactionRepository;
-import hcmute.fit.event_management.service.ITransactionService;
+import hcmute.fit.event_management.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Service
-public class TransactionServiceImpl implements ITransactionService {
+public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private TransactionRepository transactionRepository;

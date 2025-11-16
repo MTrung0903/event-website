@@ -8,7 +8,7 @@ import hcmute.fit.event_management.repository.AssignedRoleRepository;
 import hcmute.fit.event_management.repository.EventRepository;
 import hcmute.fit.event_management.repository.RoleRepository;
 import hcmute.fit.event_management.repository.UserRepository;
-import hcmute.fit.event_management.service.IRoleAssignmentService;
+import hcmute.fit.event_management.service.RoleAssignmentService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class RoleAssignmentServiceImpl implements IRoleAssignmentService {
+public class RoleAssignmentServiceImpl implements RoleAssignmentService {
     @Autowired
     private AssignedRoleRepository assignedRoleRepository;
     @Autowired
