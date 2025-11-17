@@ -7,16 +7,19 @@ import hcmute.fit.event_management.dto.RoleDTO;
 import hcmute.fit.event_management.dto.UserDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.entity.keys.AccountRoleId;
+import hcmute.fit.event_management.mapper.UserMapper;
 import hcmute.fit.event_management.repository.*;
 import hcmute.fit.event_management.service.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import payload.Response;
@@ -26,107 +29,58 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRoleRepository userRoleRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private OrganizerRepository organizerRepository;
 
-    @Autowired
-    private Cloudinary cloudinary;
-    @Autowired
-    private MessageRepository messageRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private UserDTO convertToDTO(User user, Optional<List<UserRole>> userRolesOpt) {
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
+    private final PasswordEncoder passwordEncoder;
 
-        // Map Organizer
-        if (user.getOrganizer() != null) {
-            OrganizerDTO organizerDTO = new OrganizerDTO();
-            BeanUtils.copyProperties(user.getOrganizer(), organizerDTO);
-            String urlImage = cloudinary.url().generate(user.getOrganizer().getOrganizerLogo());
-            organizerDTO.setOrganizerLogo(urlImage);
-            userDTO.setOrganizer(organizerDTO);
-        }
 
-        // Map Roles and Permissions
-        List<RoleDTO> roleDTOs = new ArrayList<>();
-        if (userRolesOpt.isPresent()) {
-            for (UserRole userRole : userRolesOpt.get()) {
-                Role role = userRole.getRole();
-                RoleDTO roleDTO = new RoleDTO();
-                roleDTO.setRoleID(role.getRoleId());
-                roleDTO.setName(role.getName());
-                roleDTO.setCreatedBy(role.getCreatedBy());
+    private final OrganizerRepository organizerRepository;
 
-                // Map Permissions
-                List<PermissionDTO> permissionDTOs = new ArrayList<>();
-                if (role.getPermissions() != null) {
-                    for (Permission permission : role.getPermissions()) {
-                        PermissionDTO permissionDTO = new PermissionDTO();
-                        permissionDTO.setName(permission.getName());
-                        permissionDTO.setDescription(permission.getDescription());
-                        permissionDTOs.add(permissionDTO);
-                    }
-                }
-                roleDTO.setPermissions(permissionDTOs);
-                roleDTOs.add(roleDTO);
-            }
-        }
-        userDTO.setRoles(roleDTOs);
-        return userDTO;
+
+
+
+    private final MessageRepository messageRepository;
+
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository, UserRoleRepository userRoleRepository,
+                           PasswordEncoder passwordEncoder, OrganizerRepository organizerRepository,
+                           MessageRepository messageRepository, UserMapper userMapper) {
+
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.userRoleRepository = userRoleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.organizerRepository = organizerRepository;
+        this.messageRepository = messageRepository;
+        this.userMapper = userMapper;
     }
 
-    @PostConstruct
-    @Transactional
-    public void initDefaultAdmin() {
-        Optional<Role> adminRole = roleRepository.findByName("ROLE_ADMIN");
-        if (adminRole.isEmpty()) {
-            Role role = new Role();
-            role.setName("ROLE_ADMIN");
-            roleRepository.save(role);
-            adminRole = Optional.of(role);
-            logger.info("Created ROLE_ADMIN");
-        }
-        Optional<User> adminUser = userRepository.findByEmail("admin@gmail.com");
-        if (adminUser.isEmpty()) {
-            User user = new User();
-            user.setEmail("admin@gmail.com");
-            user.setPassword(passwordEncoder.encode("admin"));
-            user.setGender("");
-            user.setFullName("Admin");
-            user.setActive(true);
-            userRepository.save(user);
+    Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
-            AccountRoleId accountRoleId = new AccountRoleId(user.getUserId(), adminRole.get().getRoleId());
-            UserRole userRole = new UserRole(accountRoleId, user, adminRole.get());
-            userRoleRepository.save(userRole);
-            logger.info("Created default admin account: admin@gmail.com");
-        } else {
-            logger.info("Admin account already exists: admin@gmail.com");
-        }
-    }
+
+
+
+
 
     @Transactional
     @Override
     public ResponseEntity<Response> register(UserDTO userDTO) {
         // Kiểm tra email đã tồn tại
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-            logger.warn("Registration failed: Email {} already exists", userDTO.getEmail());
+
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new Response(409, "Conflict", "Email already exists"));
         }
@@ -134,19 +88,16 @@ public class UserServiceImpl implements UserService {
         String roleName = userDTO.getOrganizer() == null ? "ROLE_ATTENDEE" : "ROLE_ORGANIZER";
         Optional<Role> role = roleRepository.findByName(roleName);
         if (role.isEmpty()) {
-            logger.error("Registration failed: {} not found in database", roleName);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new Response(500, "Error", roleName + " not configured"));
         }
         // Tạo user
         User user = new User();
-        user.setFullName(userDTO.getFullName());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setGender(userDTO.getGender());
-        user.setBirthday(userDTO.getBirthday());
-        user.setAddress(userDTO.getAddress());
+        BeanUtils.copyProperties(userDTO, user);
+
         user.setActive(true);
+
         if (userDTO.getPreferredEventTypes() != null) {
             user.setPreferredEventTypes(new ArrayList<>(userDTO.getPreferredEventTypes()));
         }
@@ -183,35 +134,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<Response> saveChangeInfor(UserDTO userChange) {
-        if (userChange.getEmail() == null || userChange.getEmail().isEmpty()) {
-            logger.error("Invalid email provided");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(400, "Bad Request", "Email is required"));
+        if ( userChange.getEmail().isEmpty()) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).
+                    body(new Response(400, "Bad Request", "Email is required"));
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(userChange.getEmail());
-        if (!userOpt.isPresent()) {
-            logger.error("User {} not found", userChange.getEmail());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response(404, "Not Found", "User not found"));
-        }
+        User user = userRepository.findByEmail(userChange.getEmail()).orElseThrow(() ->
+                new BadCredentialsException("User not found"));
 
-        User user = userOpt.get();
 
         // Kiểm tra email mới (nếu thay đổi)
         if (!userChange.getEmail().equals(user.getEmail())) {
             Optional<User> existingUserWithNewEmail = userRepository.findByEmail(userChange.getEmail());
             if (existingUserWithNewEmail.isPresent()) {
                 logger.error("Email {} already exists", userChange.getEmail());
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Response(409, "Conflict", "Email already exists"));
+                return ResponseEntity.status(HttpStatus.CONFLICT).
+                        body(new Response(409, "Conflict", "Email already exists"));
             }
             user.setEmail(userChange.getEmail());
         }
+
         user.setFullName(userChange.getFullName());
         user.setGender(userChange.getGender());
-        if (userChange.getBirthday().isAfter(LocalDate.now())) {
-            logger.error("Invalid birthday: {}", userChange.getBirthday());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response(400, "Bad Request", "Birthday cannot be in the future"));
-        }
         user.setBirthday(userChange.getBirthday());
         user.setAddress(userChange.getAddress());
 
@@ -219,7 +164,8 @@ public class UserServiceImpl implements UserService {
             OrganizerDTO organizerDTO = userChange.getOrganizer();
             if (organizerDTO.getOrganizerName() == null || organizerDTO.getOrganizerName().isEmpty()) {
                 logger.error("Invalid organizer name provided");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(400, "Bad Request", "Organizer name is required"));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).
+                        body(new Response(400, "Bad Request", "Organizer name is required"));
             }
 
             Organizer organizer = user.getOrganizer();
@@ -237,88 +183,68 @@ public class UserServiceImpl implements UserService {
         // Lưu user
         userRepository.save(user);
 
-        logger.info("User information updated successfully for email: {}", userChange.getEmail());
-        return ResponseEntity.ok(new Response(200, "Success", "User information updated successfully"));
+
+        return ResponseEntity.ok(new Response(200, "Success",
+                "User information updated successfully"));
     }
 
     @Override
     public ResponseEntity<Response> AddMoreRoleForUser(String email, String roleName) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
-            logger.error("User {} not found", email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Response(404, "Not Found", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new BadCredentialsException("User not found"));
 
-        Optional<Role> roleOpt = roleRepository.findByName(roleName);
-        if (!roleOpt.isPresent()) {
-            logger.error("Role {} not found", roleName);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Response(404, "Not Found", "Role not found"));
-        }
-
-        User user = userOpt.get();
-        Role role = roleOpt.get();
+        Role role = roleRepository.findByName(roleName).orElseThrow(() ->
+                new BadCredentialsException("Role not found"));
 
         // Thêm role mới
         AccountRoleId accountRoleId = new AccountRoleId(user.getUserId(), role.getRoleId());
         UserRole userRole = new UserRole(accountRoleId, user, role);
         userRoleRepository.save(userRole);
 
-        logger.info("Role {} added to user {}", roleName, email);
-        return ResponseEntity.ok(new Response(200, "Success", "Role added successfully"));
+        return ResponseEntity.ok(new Response(200, "Success",
+                "Role added successfully"));
     }
 
     @Transactional
     @Override
     public ResponseEntity<Response> deleteRoleInUser(String email, String roleName) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
-            logger.error("User {} not found", email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Response(404, "Not Found", "User not found"));
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new BadCredentialsException("user not found"));
 
-        Optional<Role> roleOpt = roleRepository.findByName(roleName);
-        if (!roleOpt.isPresent()) {
-            logger.error("Role with name {} not found", roleName);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Response(404, "Not Found", "Role not found"));
-        }
 
-        User user = userOpt.get();
-        Role role = roleOpt.get();
+        Role role = roleRepository.findByName(roleName).orElseThrow(() ->
+                new BadCredentialsException("role not found"));
+
 
         // Kiểm tra số lượng vai trò của người dùng
-        Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(user);
-        if (userRolesOpt.isPresent()) {
-            List<UserRole> userRoles = userRolesOpt.get();
-            // Nếu người dùng chỉ có 1 vai trò và vai trò đó là vai trò cần xóa
-            if (userRoles.size() == 1 && userRoles.get(0).getRole().getRoleId() == role.getRoleId()) {
-                logger.warn("Cannot remove role {} from user {}: User has only one role", roleName, email);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new Response(400, "Bad Request", "Cannot remove the only role of the user"));
-            }
+        List<UserRole>userRoles = userRoleRepository.findAllByUser(user).orElseThrow(() ->
+                new BadCredentialsException("role not found"));
+        if (userRoles.size() == 1 && userRoles.get(0).getRole().getRoleId() == role.getRoleId()) {
 
-            // Tìm và xóa UserRole
-            for (UserRole ur : userRoles) {
-                if (ur.getRole().getRoleId() == role.getRoleId()) {
-                    userRoleRepository.delete(ur);
-                    // Nếu vai trò là ROLE_ORGANIZER, xóa thông tin Organizer
-                    if ("ROLE_ORGANIZER".equals(roleName) && user.getOrganizer() != null) {
-                        try {
-                            organizerRepository.deleteById(user.getOrganizer().getOrganizerId());
-                            logger.info("Organizer with ID {} removed for user {}", user.getOrganizer().getOrganizerId(), email);
-                            user.setOrganizer(null); // Đặt lại tham chiếu Organizer
-                            userRepository.save(user); // Lưu thay đổi vào cơ sở dữ liệu
-                        } catch (Exception e) {
-                            logger.error("Failed to delete Organizer for user {}: {}", email, e.getMessage());
-                            throw new RuntimeException("Failed to delete Organizer", e);
-                        }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Response(400, "Bad Request",
+                            "Cannot remove the only role of the user"));
+
+
+        }
+        // Tìm và xóa UserRole
+        for (UserRole ur : userRoles) {
+            if (ur.getRole().getRoleId() == role.getRoleId()) {
+                userRoleRepository.delete(ur);
+                // Nếu vai trò là ROLE_ORGANIZER, xóa thông tin Organizer
+                if ("ROLE_ORGANIZER".equals(roleName) && user.getOrganizer() != null) {
+                    try {
+                        organizerRepository.deleteById(user.getOrganizer().getOrganizerId());
+
+                        user.setOrganizer(null);
+                        userRepository.save(user);
+                    } catch (Exception e) {
+
+                        throw new RuntimeException("Failed to delete Organizer", e);
                     }
-                    logger.info("Role {} removed from user {}", roleName, email);
-                    return ResponseEntity.ok(new Response(200, "Success", "Role removed successfully"));
                 }
+
+                return ResponseEntity.ok(new Response(200, "Success", "Role removed successfully"));
             }
         }
 
@@ -330,26 +256,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getInfor(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
+        if (userOpt.isEmpty()) {
             logger.error("User with email {} not found", email);
             return new UserDTO();
         }
 
         User user = userOpt.get();
         Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(user);
-        return convertToDTO(user, userRolesOpt);
+        return userMapper.toDto(user, userRolesOpt);
     }
 
     @Override
     public UserDTO findById(int userId) {
         Optional<User> userOpt = userRepository.findById(userId);
-        if (!userOpt.isPresent()) {
+        if (userOpt.isEmpty()) {
             return new UserDTO();
         }
 
         User user = userOpt.get();
         Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(user);
-        return convertToDTO(user, userRolesOpt);
+        return userMapper.toDto(user, userRolesOpt);
     }
 
     @Transactional
@@ -446,40 +372,38 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<Response> deleteUser(String email) {
-        if (email == null || email.isEmpty()) {
+        if (email.isEmpty()) {
             logger.error("Invalid email provided");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response(400, "Bad Request", "Email is required"));
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
-            logger.error("User with email {} not found", email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Response(404, "Not Found", "User not found"));
-        }
+        User userOpt = userRepository.findByEmail(email).orElseThrow(() ->
+                new BadCredentialsException("User not found"));
 
-        User user = userOpt.get();
+
+
 
         // Kiểm tra nếu user là admin mặc định
-        if (user.getEmail().equals("admin@gmail.com")) {
+        if (userOpt.getEmail().equals("admin@gmail.com")) {
             logger.warn("Cannot delete default admin account: {}", email);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response(400, "Bad Request", "Cannot delete default admin account"));
+                    .body(new Response(400, "Bad Request",
+                            "Cannot delete default admin account"));
         }
 
         // Xóa các liên kết
-        Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(user);
+        Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(userOpt);
         if (userRolesOpt.isPresent()) {
             userRoleRepository.deleteAll(userRolesOpt.get());
         }
 
-        if (user.getOrganizer() != null) {
-            organizerRepository.delete(user.getOrganizer());
+        if (userOpt.getOrganizer() != null) {
+            organizerRepository.delete(userOpt.getOrganizer());
         }
 
         // Xóa user
-        userRepository.delete(user);
+        userRepository.delete(userOpt);
 
         logger.info("User with email {} deleted successfully", email);
         return ResponseEntity.ok(new Response(200, "Success", "User deleted successfully"));
@@ -492,7 +416,7 @@ public class UserServiceImpl implements UserService {
 
         for (User user : users) {
             Optional<List<UserRole>> userRolesOpt = userRoleRepository.findAllByUser(user);
-            UserDTO userDTO = convertToDTO(user, userRolesOpt);
+            UserDTO userDTO = userMapper.toDto(user, userRolesOpt);
             userDTOs.add(userDTO);
         }
 
@@ -534,14 +458,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<Response> lockUser(String email) {
         if (email == null || email.isEmpty()) {
-            logger.error("Invalid email provided");
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response(400, "Bad Request", "Email là bắt buộc"));
         }
 
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
-            logger.error("User with email {} not found", email);
+        if (userOpt.isEmpty()) {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Response(404, "Not Found", "Không tìm thấy người dùng"));
         }
@@ -550,13 +474,13 @@ public class UserServiceImpl implements UserService {
 
         // Kiểm tra nếu user là admin mặc định
         if (user.getEmail().equals("admin@gmail.com")) {
-            logger.warn("Cannot lock default admin account: {}", email);
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response(400, "Bad Request", "Không thể khóa tài khoản admin mặc định"));
+                    .body(new Response(400, "Bad Request",
+                            "Không thể khóa tài khoản admin mặc định"));
         }
 
         if (!user.isActive()) {
-            logger.warn("User with email {} is already locked", email);
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new Response(409, "Conflict", "Tài khoản đã bị khóa"));
         }
@@ -564,8 +488,9 @@ public class UserServiceImpl implements UserService {
         user.setActive(false);
         userRepository.save(user);
 
-        logger.info("User with email {} locked successfully", email);
-        return ResponseEntity.ok(new Response(200, "Success", "Tài khoản đã được khóa thành công"));
+
+        return ResponseEntity.ok(new Response(200, "Success",
+                "Tài khoản đã được khóa thành công"));
     }
 
 
@@ -573,21 +498,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<Response> unlockUser(String email) {
         if (email == null || email.isEmpty()) {
-            logger.error("Invalid email provided");
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new Response(400, "Bad Request", "Email là bắt buộc"));
         }
 
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (!userOpt.isPresent()) {
-            logger.error("User with email {} not found", email);
+        if (userOpt.isEmpty()) {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Response(404, "Not Found", "Không tìm thấy người dùng"));
         }
 
         User user = userOpt.get();
         if (user.isActive()) {
-            logger.warn("User with email {} is already unlocked", email);
+
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new Response(409, "Conflict", "Tài khoản đã được mở khóa"));
         }
@@ -595,8 +520,9 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
         userRepository.save(user);
 
-        logger.info("User with email {} unlocked successfully", email);
-        return ResponseEntity.ok(new Response(200, "Success", "Tài khoản đã được mở khóa thành công"));
+
+        return ResponseEntity.ok(new Response(200, "Success",
+                "Tài khoản đã được mở khóa thành công"));
     }
 
 }

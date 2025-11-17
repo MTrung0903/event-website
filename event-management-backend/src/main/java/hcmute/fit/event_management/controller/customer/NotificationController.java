@@ -30,7 +30,7 @@ public class NotificationController {
                 return;
             }
             // Lưu thông báo
-            Notification savedNotification = notificationService.createNotification(notificationDTO);
+
 
             // Gửi thông báo tới người dùng cụ thể
             template.convertAndSendToUser(

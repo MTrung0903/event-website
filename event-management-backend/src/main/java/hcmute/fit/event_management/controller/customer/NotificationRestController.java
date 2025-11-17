@@ -37,7 +37,7 @@ public class NotificationRestController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found with ID: " + notificationDTO.getUserId());
             }
             // Lưu thông báo vào cơ sở dữ liệu
-            notificationService.createNotification(notificationDTO);
+            notificationService.createNotification(notificationDTO.getTitle(),notificationDTO.getMessage(), notificationDTO.getUserId());
             // Gửi thông báo qua WebSocket
             template.convertAndSendToUser(
                     String.valueOf(notificationDTO.getUserId()),

@@ -4,27 +4,22 @@ import com.cloudinary.Cloudinary;
 import hcmute.fit.event_management.dto.EventDTO;
 import hcmute.fit.event_management.dto.EventLocationDTO;
 import hcmute.fit.event_management.entity.Event;
-
 import hcmute.fit.event_management.repository.EventViewRepository;
-import hcmute.fit.event_management.service.EventService;
 import hcmute.fit.event_management.util.VietnamCities;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@AllArgsConstructor
 public class EventMapper {
 
+    private final Cloudinary cloudinary;
+    private final EventViewRepository eventViewRepository;
 
-
-    @Autowired
-    private Cloudinary cloudinary;
-
-    @Autowired
-    private EventViewRepository eventViewRepository;
 
     public EventDTO toDto(Event event) {
         EventDTO dto = new EventDTO();

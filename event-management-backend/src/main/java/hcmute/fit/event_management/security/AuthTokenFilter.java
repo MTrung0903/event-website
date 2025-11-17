@@ -63,29 +63,34 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         return PUBLIC_ENDPOINTS.stream().anyMatch(endpoint ->
-                endpoint.endsWith("/**") ? path.startsWith(endpoint.substring(0, endpoint.length() - 3)) : path.equals(endpoint)
+                endpoint.endsWith("/**") ? path.startsWith(endpoint.substring(0, endpoint.length() - 3))
+                        : path.equals(endpoint)
         );
     }
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+                                    throws ServletException, IOException {
         String path = request.getRequestURI();
-        String authHeader = request.getHeader("Authorization");
+
 
         try {
             String token = getJwtFromRequest(request);
-            logger.info("JWT received for {}: {}", path, token != null ? "present" : "null");
+            //logger.info("JWT received for {}: {}", path, token != null ? "present" : "null");
 
             if (token != null && jwtTokenUtil.validateToken(token)) {
                 String email = jwtTokenUtil.getEmailFromToken(token);
                 List<String> roles = jwtTokenUtil.getRolesFromToken(token);
                 List<String> permissions = jwtTokenUtil.getPermissionsFromToken(token);
                 List<GrantedAuthority> authorities = new ArrayList<>();
-                roles.stream().map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role)).forEach(authorities::add);
+                roles.stream().map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_")
+                        ? role : "ROLE_" + role)).forEach(authorities::add);
                 permissions.stream().map(SimpleGrantedAuthority::new).forEach(authorities::add);
                 UserDetail userDetail = new UserDetail(email, null, authorities);
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetail, null, userDetail.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(userDetail,
+                                null, userDetail.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 logger.info("Authenticated user: {} for {}", email, path);
             } else {

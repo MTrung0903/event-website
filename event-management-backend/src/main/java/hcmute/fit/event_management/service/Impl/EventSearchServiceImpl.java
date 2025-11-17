@@ -14,6 +14,7 @@ import hcmute.fit.event_management.repository.UserRepository;
 import hcmute.fit.event_management.service.EventSearchService;
 import hcmute.fit.event_management.service.EventService;
 import hcmute.fit.event_management.util.VietnamCities;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class EventSearchServiceImpl implements EventSearchService {
 
     private final EventService eventService;
@@ -32,18 +34,7 @@ public class EventSearchServiceImpl implements EventSearchService {
     private final UserRepository userRepository;
     private final EventMapper eventMapper;
 
-    public EventSearchServiceImpl(EventService eventService, EventRepository eventRepository,
-                                  EventViewRepository eventViewRepository,
-                                  EventTypeRepository eventTypeRepository, UserRepository userRepository,
-                                  EventMapper eventMapper) {
-        this.eventService = eventService;
-        this.eventRepository = eventRepository;
 
-        this.eventViewRepository = eventViewRepository;
-        this.eventTypeRepository = eventTypeRepository;
-        this.userRepository = userRepository;
-        this.eventMapper = eventMapper;
-    }
 
 
     @Override

@@ -43,7 +43,7 @@ public interface EventService {
 
     void recordEventView(Integer eventId, Integer userId);
 
-    Response publishEvent(int eventId);
+    ResponseEntity<Response> publishEvent(int eventId);
 
     Response reportEvent(int eventId, String reason);
 

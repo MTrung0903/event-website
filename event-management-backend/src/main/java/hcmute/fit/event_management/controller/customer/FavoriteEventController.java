@@ -42,19 +42,25 @@ public class FavoriteEventController {
 
 
         // Tạo và gửi thông báo cho người nhận
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setTitle("Notification");
-        notificationDTO.setMessage("You have saved the " +eventName+" event on your favorite list");
-        notificationDTO.setUserId(favorite.getUserId());
-        notificationDTO.setRead(false);
-        notificationDTO.setCreatedAt(new Date());
-        notificationService.createNotification(notificationDTO);
-        template.convertAndSendToUser(
-                String.valueOf(notificationDTO.getUserId()),
-                "/specific",
-                notificationDTO
-        );
-        return ResponseEntity.ok(new Response(200,"Success", notificationDTO));
+//        NotificationDTO notificationDTO = new NotificationDTO();
+//        notificationDTO.setTitle("Notification");
+//        notificationDTO.setMessage("You have saved the " +eventName+" event on your favorite list");
+//        notificationDTO.setUserId(favorite.getUserId());
+//
+//        notificationDTO.setRead(false);
+//        notificationDTO.setCreatedAt(new Date());
+//        notificationService.createNotification(notificationDTO);
+//        template.convertAndSendToUser(
+//                String.valueOf(notificationDTO.getUserId()),
+//                "/specific",
+//                notificationDTO
+//        );
+        String message = "You have saved the " +eventName+" event on your favorite list";
+
+        int userId = favorite.getUserId();
+        notificationService.createNotification("Notification",message, userId);
+
+        return ResponseEntity.ok(new Response(200,"Success", message));
     }
 
     @DeleteMapping()

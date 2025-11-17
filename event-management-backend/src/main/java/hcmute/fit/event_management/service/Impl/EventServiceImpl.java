@@ -480,17 +480,17 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public Response publishEvent(int eventId){
+    public ResponseEntity<Response> publishEvent(int eventId){
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId));
         if (!"Draft".equals(event.getEventStatus())) {
-            return new Response(400, "Bad Request", "Only Draft events can be published");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(400, "Bad Request", "Only Draft events can be published"));
         }
         event.setEventStatus("public");
         event.setPublishTime(LocalDateTime.now());
         eventRepository.save(event);
 
-        return new Response(200, "Success", eventMapper.toDto(event));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(200, "Success", eventMapper.toDto(event)));
     }
 
     @Override
@@ -508,13 +508,11 @@ public class EventServiceImpl implements EventService {
 
 
         // Gửi thông báo cho người tổ chức
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setTitle("Sự kiện bị báo cáo");
-        notificationDTO.setMessage("Sự kiện " + event.getEventName() + " đã bị báo cáo vì lý do: " + reason);
-        notificationDTO.setUserId(event.getUser().getUserId());
-        notificationDTO.setRead(false);
-        notificationDTO.setCreatedAt(new Date());
-        notificationService.createNotification(notificationDTO);
+
+        String message = "Sự kiện " + event.getEventName() + " đã bị báo cáo vì lý do: " + reason;
+        int userId = event.getUser().getUserId();
+
+        notificationService.createNotification("Sự kiện bị báo cáo", message, userId);
 
         return new Response(200, "Success", "Event reported successfully");
     }
@@ -546,13 +544,12 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(event);
 
         // Gửi thông báo cho người tổ chức
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setTitle("Sự kiện được mở lại");
-        notificationDTO.setMessage("Sự kiện " + event.getEventName() + " đã được mở lại với trạng thái " + event.getEventStatus());
-        notificationDTO.setUserId(event.getUser().getUserId());
-        notificationDTO.setRead(false);
-        notificationDTO.setCreatedAt(new Date());
-        notificationService.createNotification(notificationDTO);
+
+        String message = "Sự kiện " + event.getEventName() + " đã được mở lại với trạng thái " +
+                event.getEventStatus();
+        int userId = event.getUser().getUserId();
+
+        notificationService.createNotification("Sự kiện được mở lại",message,userId);
 
         return new Response(200, "Success", eventMapper.toDto(event));
     }

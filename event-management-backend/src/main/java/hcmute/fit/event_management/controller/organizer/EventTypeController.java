@@ -14,10 +14,12 @@ import java.util.List;
 @RequestMapping("/api/events-type")
 public class EventTypeController {
 
-    @Autowired
-    private EventTypeService eventTypeService;
 
+    private final EventTypeService eventTypeService;
 
+    public EventTypeController(EventTypeService eventTypeService) {
+        this.eventTypeService = eventTypeService;
+    }
 
     @GetMapping("/get-all-event-types")
     public ResponseEntity<List<EventTypeDTO>> getAllEventTypes() {

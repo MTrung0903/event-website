@@ -50,20 +50,26 @@ public class ChatController {
                 "/chat",
                 messageDTO
         );
-        // Create and send notification
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setTitle("New Message");
-        notificationDTO.setMessage("You have a new message from " + messageDTO.getSenderEmail());
-        notificationDTO.setUserId(messageService.getUserIdByEmail(messageDTO.getRecipientEmail()));
-        notificationDTO.setRead(false);
-        notificationDTO.setCreatedAt(new Date());
+//        // Create and send notification
+//        NotificationDTO notificationDTO = new NotificationDTO();
+//        notificationDTO.setTitle("New Message");
+//        notificationDTO.setMessage("You have a new message from " + messageDTO.getSenderEmail());
+//        notificationDTO.setUserId(messageService.getUserIdByEmail(messageDTO.getRecipientEmail()));
+//        notificationDTO.setRead(false);
+//        notificationDTO.setCreatedAt(new Date());
+//
+//        notificationService.createNotification(notificationDTO.getMessage(),notificationDTO.getUserId());
+//        template.convertAndSendToUser(
+//                String.valueOf(notificationDTO.getUserId()),
+//                "/specific",
+//                messageDTO
+//        );
 
-        notificationService.createNotification(notificationDTO);
-        template.convertAndSendToUser(
-                String.valueOf(notificationDTO.getUserId()),
-                "/specific",
-                notificationDTO
-        );
+        String message = "You have a new message from " + messageDTO.getSenderEmail();
+        int userId = messageService.getUserIdByEmail(messageDTO.getRecipientEmail());
+
+        notificationService.createNotification("New Message",message,userId);
+
     }
     @MessageMapping("/typing")
     public void sendTypingNotification(@Payload TypingDTO typingDTO) {

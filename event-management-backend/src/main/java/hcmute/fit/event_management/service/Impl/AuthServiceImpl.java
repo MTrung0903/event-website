@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -62,16 +63,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<Response> signIn(UserDTO account) {
         try {
-            Optional<User> userOpt = userRepository.findByEmail(account.getEmail());
+            User user = userRepository.findByEmail(account.getEmail()).orElseThrow(() ->
+                    new BadCredentialsException("Email hoặc mật khẩu không chính xác"));
 
-            if (userOpt.isEmpty()) {
-
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new Response(401, "Unauthorized",
-                                "Email hoặc mật khẩu không hợp lệ"));
+            if(!passwordEncoder.matches(account.getPassword(), user.getPassword())) {
+                throw new BadCredentialsException("Wrong password");
             }
 
-            User user = userOpt.get();
+
 
             // Kiểm tra trạng thái is_active
             if (!user.isActive()) {

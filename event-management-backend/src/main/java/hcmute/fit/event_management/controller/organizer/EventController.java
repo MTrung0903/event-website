@@ -4,11 +4,13 @@ import hcmute.fit.event_management.dto.*;
 import hcmute.fit.event_management.entity.Event;
 import hcmute.fit.event_management.entity.EventType;
 import hcmute.fit.event_management.entity.User;
+import hcmute.fit.event_management.mapper.EventDetailMapper;
 import hcmute.fit.event_management.repository.EventRepository;
 import hcmute.fit.event_management.repository.EventTypeRepository;
 import hcmute.fit.event_management.service.*;
 import hcmute.fit.event_management.service.Impl.EventServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -27,149 +29,80 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/events")
+
 public class EventController {
-    @Autowired
-    private EventServiceImpl eventService;
+    private final EmailService emailService;
 
-    @Autowired
-    private SegmentService segmentService;
+    private final FollowService followService;
 
-    @Autowired
-    private TicketService ticketService;
+    private final EventRepository eventRepository;
 
-    @Autowired
-    private SponsorService sponsorService;
-    @Autowired
-    private OrganizerService organizerService;
+    private final EventTypeService eventTypeService;
 
-    @Autowired
-    private EventSearchService eventSearchService;
+    private final EventDetailMapper eventDetailMapper;
 
-    @Autowired
-    private EventTypeRepository eventTypeRepository;
+    private final EventServiceImpl eventService;
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private NotificationService notificationService;
+    private final OrganizerService organizerService;
 
-    @Autowired
-    private EmailService emailService;
+    private final EventSearchService eventSearchService;
 
-    @Autowired
-    private FollowService followService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private EventRepository eventRepository;
+    private final UserService userService;
+
+
+
+    public EventController(EmailService emailService, EventServiceImpl eventService,
+                           OrganizerService organizerService, EventSearchService eventSearchService,
+                           NotificationService notificationService, FollowService followService,
+                           EventRepository eventRepository, EventTypeService eventTypeService,
+                           EventDetailMapper eventDetailMapper, UserService userService) {
+        this.emailService = emailService;
+        this.eventService = eventService;
+        this.organizerService = organizerService;
+        this.eventSearchService = eventSearchService;
+        this.notificationService = notificationService;
+        this.followService = followService;
+        this.eventRepository = eventRepository;
+        this.eventTypeService = eventTypeService;
+        this.eventDetailMapper = eventDetailMapper;
+        this.userService = userService;
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(EventController.class);
+
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ORGANIZER')")
-    public ResponseEntity<Response> createEvent(@RequestBody EventDTO event) throws IOException {
-        // Gán trạng thái mặc định nếu không được cung cấp
-        if (event.getEventStatus() == null || event.getEventStatus().isEmpty()) {
-            event.setEventStatus("Draft");
-        }
-        // Create notification for Organizer
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setTitle("New Event");
-        notificationDTO.setMessage(event.getEventName() + " was successfully created");
-        notificationDTO.setUserId(event.getUserId());
-        notificationDTO.setRead(false);
-        notificationDTO.setCreatedAt(new Date());
-        notificationService.createNotification(notificationDTO);
+    public ResponseEntity<Response> createEvent(@RequestBody EventDTO event) {
+
+
+        notificationService.createNotification("New event",event.getEventName(),event.getUserId() );
 
         // Save event and get response
         ResponseEntity<Response> response = eventService.saveEventToDB(event);
         if (response.getStatusCode() == HttpStatus.CREATED) {
-            // Get created event
-            EventDTO createdEvent = (EventDTO) response.getBody().getData();
-            // Get Organizer's ID
-            OrganizerDTO organizer = organizerService.getOrganizerInforByEventHost(event.getEventHost());
-            if (organizer != null && organizer.getOrganizerId() > 0 && "public".equals(createdEvent.getEventStatus())) {
-                List<User> followers = followService.getFollowers(organizer.getOrganizerId());
-                List<UserDTO> followersDTO = new ArrayList<>();
-                for (User user : followers) {
-                    UserDTO userDTO = new UserDTO();
-                    BeanUtils.copyProperties(user, userDTO);
-                    followersDTO.add(userDTO);
-                }
-                // Send email to each follower only if event is public
-                String eventUrl = "http://localhost:3000/event/" + createdEvent.getEventId();
-                String eventLocation = createdEvent.getEventLocation().getVenueName() + ", " +
-                        createdEvent.getEventLocation().getAddress() + ", " +
-                        createdEvent.getEventLocation().getCity();
-                for (UserDTO follower : followersDTO) {
-                    try {
-                        emailService.sendNewEventNotification(
-                                follower.getEmail(),
-                                createdEvent.getEventName(),
-                                createdEvent.getEventStart().toString(),
-                                eventLocation,
-                                eventUrl
-                        );
-                    } catch (Exception e) {
-                        System.err.println("Failed to send email to " + follower.getEmail() + ": " + e.getMessage());
-                    }
-                }
-            }
+            notificationService.sendNotification(response);
         }
 
         return response;
     }
+
     @PutMapping("/publish/{eventId}")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<Response> publishEvent(@PathVariable int eventId) {
-        Response response = eventService.publishEvent(eventId);
+        ResponseEntity<Response> response = eventService.publishEvent(eventId);
 
-        // Kiểm tra nếu xuất bản thành công và trạng thái là public
-        if (response.getStatusCode() == 200 && response.getData() instanceof EventDTO) {
-            EventDTO publishedEvent = (EventDTO) response.getData();
-            if ("public".equals(publishedEvent.getEventStatus())) {
-                // Lấy thông tin tổ chức
-                OrganizerDTO organizer = organizerService.getOrganizerInforByEventHost(publishedEvent.getEventHost());
-                if (organizer != null && organizer.getOrganizerId() > 0) {
-                    // Lấy danh sách người theo dõi
-                    List<User> followers = followService.getFollowers(organizer.getOrganizerId());
-                    List<UserDTO> followersDTO = new ArrayList<>();
-                    for (User user : followers) {
-                        UserDTO userDTO = new UserDTO();
-                        BeanUtils.copyProperties(user, userDTO);
-                        followersDTO.add(userDTO);
-                    }
 
-                    // Gửi email thông báo cho từng người theo dõi
-                    String eventUrl = "http://localhost:3000/event/" + publishedEvent.getEventId();
-                    String eventLocation = publishedEvent.getEventLocation().getVenueName() + ", " +
-                            publishedEvent.getEventLocation().getAddress() + ", " +
-                            publishedEvent.getEventLocation().getCity();
-                    for (UserDTO follower : followersDTO) {
-                        try {
-                            emailService.sendNewEventNotification(
-                                    follower.getEmail(),
-                                    publishedEvent.getEventName(),
-                                    publishedEvent.getEventStart().toString(),
-                                    eventLocation,
-                                    eventUrl
-                            );
-                        } catch (Exception e) {
-                            System.err.println("Failed to send email to " + follower.getEmail() + ": " + e.getMessage());
-                        }
-                    }
-                }
+        if (response.getStatusCode() == HttpStatus.CREATED) {
 
-                // Tạo thông báo cho tổ chức
-                NotificationDTO notificationDTO = new NotificationDTO();
-                notificationDTO.setTitle("Sự kiện được xuất bản");
-                notificationDTO.setMessage(publishedEvent.getEventName() + " đã được xuất bản thành công");
-                notificationDTO.setUserId(publishedEvent.getUserId());
-                notificationDTO.setRead(false);
-                notificationDTO.setCreatedAt(new Date());
-                notificationService.createNotification(notificationDTO);
-            }
+            notificationService.sendNotification(response);
         }
 
-        return ResponseEntity.ok(response);
+        return response;
     }
+
     @PostMapping("/reopen/{eventId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response> reopenEvent(@PathVariable int eventId) {
@@ -182,32 +115,21 @@ public class EventController {
     public ResponseEntity<Response> saveEvent(@RequestBody EventDTO event)  {
         return eventService.saveEventToDB(event);
     }
+
     @GetMapping("/all")
     public ResponseEntity<List<EventDTO>> getAllEvents() {
         List<EventDTO> events = eventService.getAllEvent();
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("detail/{eventId}")
     public ResponseEntity<EventDetailDTO> getEventById(@PathVariable int eventId,@RequestParam(required = false) Integer userId) {
         // Ghi lại lượt xem
         if(userId !=null) eventService.recordEventView(eventId, userId);
 
-        EventDetailDTO detailDTO = new EventDetailDTO();
-        detailDTO.setEvent(eventService.getEventById(eventId));
-        detailDTO.setTickets(ticketService.getTicketsByEventId(eventId));
-        detailDTO.setSegments(segmentService.getAllSegments(eventId));
-        if(sponsorService.getAllSponsorsInEvent(eventId) != null){
-            detailDTO.setSponsors(sponsorService.getAllSponsorsInEvent(eventId));
-        }
-        UserDTO organizer = userService.findById(detailDTO.getEvent().getUserId());
-        if(detailDTO.getEvent() != null && detailDTO.getEvent().getEventHost() != null) {
-            String eventHost = detailDTO.getEvent().getEventHost();
-            OrganizerDTO infor = organizerService.getOrganizerInforByEventHost(eventHost);
-            infor.setOrganizerEmail(organizer.getEmail());
-            detailDTO.setOrganizer(infor);
-        }
-        return ResponseEntity.ok(detailDTO);
+        return ResponseEntity.ok(eventDetailMapper.toDto(eventId));
     }
+
     @PostMapping("/report/{eventId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response> reportEvent(@PathVariable int eventId, @RequestBody Map<String, String> body) {
@@ -220,15 +142,18 @@ public class EventController {
         return ResponseEntity.status(response.getStatusCode() == 200 ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
                 .body(response);
     }
+
     @PutMapping("/edit")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<EventEditDTO> editEvent( @RequestBody EventEditDTO eventEditDTO) throws Exception {
         EventEditDTO eventEdit = eventService.saveEditEvent(eventEditDTO);
         return ResponseEntity.ok(eventEdit);
     }
+
     @DeleteMapping("/delete/{eventId}")
     @PreAuthorize("hasRole('ORGANIZER')")
-    public ResponseEntity<Response> deleteEvent(HttpServletRequest request,@PathVariable int eventId) throws Exception {
+    public ResponseEntity<Response> deleteEvent(HttpServletRequest request,@PathVariable int eventId)
+            throws Exception {
 
         return ResponseEntity.ok(eventService.deleteEventAndRefunds(request,eventId));
     }
@@ -244,60 +169,66 @@ public class EventController {
     public ResponseEntity<List<EventDTO>> searchEventsByNameAndCity(
             @RequestParam("term") String searchTerm,
             @RequestParam("city") String cityKey) {
-        try {
+
             List<EventDTO> results = eventSearchService.searchEventsByNameAndCity(searchTerm, cityKey);
             return ResponseEntity.ok(results);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+
     }
+
     @GetMapping("search/by-type/{categoryName}")
     public ResponseEntity<List<EventDTO>> searchEventsByEventType(@PathVariable String categoryName){
         List<EventDTO> eventsSearchByType = eventSearchService.findEventsByType(categoryName);
         return ResponseEntity.ok(eventsSearchByType);
     }
+
     @GetMapping("search/by-city/{city}")
     public ResponseEntity<List<EventDTO>> searchEventsByCity(@PathVariable String city){
         List<EventDTO> events = eventSearchService.findEventsByLocation( city );
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/get-all-event-by-org/{email}")
     public ResponseEntity<List<EventDTO>> getAllEventsByOrg(@PathVariable String email){
         List<EventDTO> events = eventSearchService.getAllEventByHost(email);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("search/by-host/{eventHost}")
     public ResponseEntity<List<EventDTO>> searchEventsByHost(@PathVariable String eventHost){
         List<EventDTO> events = eventSearchService.findEventsByHost(eventHost);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("search/by-tag/{tag}")
     public ResponseEntity<List<EventDTO>> searchEventsByTag(@PathVariable String tag){
         List<EventDTO> events = eventSearchService.findEventsByTags(tag);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/by-name/{eventName}")
     public ResponseEntity<List<EventDTO>> searchEventsByName(@PathVariable String eventName){
         List<EventDTO> events = eventSearchService.findEventsByName(eventName);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/by-status/{eventStatus}")
     public ResponseEntity<List<EventDTO>> searchEventsByStatus(@PathVariable String eventStatus){
         List<EventDTO> events = eventSearchService.findEventsStatus(eventStatus);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/by-event-start/{eventStart}")
     public ResponseEntity<List<EventDTO>> searchEventsByEventStart(@PathVariable LocalDateTime eventStart){
         List<EventDTO> events = eventSearchService.findEventsByDate(eventStart);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/upcoming")
     public ResponseEntity<List<EventDTO>> searchEventsUpComming(){
         List<EventDTO> events = eventSearchService.findEventsByCurrentMonth();
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/multiple-filters")
     public List<EventDTO> searchEventsByMultipleFilters(
             @RequestParam(required = false) String eventCategory,
@@ -306,10 +237,12 @@ public class EventController {
             @RequestParam(required = false) String ticketType) {
         return eventSearchService.searchEventsByMultipleFilters(eventCategory, eventLocation, eventStart, ticketType);
     }
+
     @GetMapping("/search/events-by-tickets-sold")
     public List<EventDTO> bestEventsByTicketsSold() {
         return eventSearchService.topEventsByTicketsSold();
     }
+
     @GetMapping("/search/events-by-favorites")
     public List<EventDTO> findTop10FavoriteEvents() {
         return eventSearchService.top10FavoriteEvents();
@@ -324,10 +257,12 @@ public class EventController {
         return profile;
 
     }
+
     @GetMapping("/search/top-cities-popular")
     public List<String> topCitiesPopular() {
         return eventSearchService.top10Cities();
     }
+
     @GetMapping("/recommended/{email}")
     public ResponseEntity<List<EventDTO>> getRecommendedEvents(@PathVariable String email) {
         List<EventDTO> events = eventSearchService.findEventsByPreferredTypesAndTags(email);
@@ -345,23 +280,20 @@ public class EventController {
         Set<EventDTO> events = eventSearchService.findEventsByPreferredTags(email);
         return ResponseEntity.ok(events);
     }
+
     @GetMapping("/search/all-tags")
     public ResponseEntity<List<String>> getAllTags() {
         List<String> tags = eventService.getAllTags();
         return ResponseEntity.ok(tags);
     }
+
     @GetMapping("get-all-event-types")
     public ResponseEntity<List<EventTypeDTO>> getAllTypes() {
-        List<EventType> list = eventTypeRepository.findAll();
-        List<EventTypeDTO> listDTO = new ArrayList<>();
-        for (EventType eventType : list) {
-            EventTypeDTO type = new EventTypeDTO();
-            type.setId(eventType.getId());
-            type.setTypeName(eventType.getTypeName());
-            listDTO.add(type);
-        }
-        return ResponseEntity.ok(listDTO);
+        List<EventTypeDTO> types = eventTypeService.getAllEventTypes();
+        return ResponseEntity.ok(types);
     }
+
+
     @GetMapping("/top-viewed")
     public ResponseEntity<List<EventViewDTO>> getTopViewedEvents(@RequestParam(defaultValue = "5") int limit) {
         List<EventViewDTO> topEvents = eventSearchService.getTopViewedEvents(limit);
@@ -374,26 +306,24 @@ public class EventController {
     @PostMapping("/recommended/{userId}")
     public ResponseEntity<List<EventDTO>> getRecommendedEventsByModel(@PathVariable int userId) {
         try {
-            // Kiểm tra userId tồn tại
+
             UserDTO user = userService.findById(userId);
             if (user.getUserId() == 0) {
-                logger.warn("User not found for userId: {}", userId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ArrayList<>());
             }
 
-            // Lấy danh sách tất cả eventId từ cơ sở dữ liệu
+
             List<Integer> allEventIds = eventRepository.getAllEventIDs();
             if (allEventIds.isEmpty()) {
-                logger.warn("No events found in database");
                 return ResponseEntity.ok(new ArrayList<>());
             }
 
-            // Tạo payload cho API /recommendations
+
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("userId", userId);
             requestBody.put("allEventIds", allEventIds);
 
-            // Gửi yêu cầu tới API /recommendations
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
@@ -405,15 +335,10 @@ public class EventController {
                     Map.class
             );
 
-            // Xử lý phản hồi từ API
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                logger.error("Failed to get recommendations from Python API, status: {}", response.getStatusCode());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
-            }
 
             List<Integer> recommendedEventIds = (List<Integer>) response.getBody().get("eventIds");
             if (recommendedEventIds == null || recommendedEventIds.isEmpty()) {
-                logger.info("No recommendations returned for userId: {}", userId);
+
                 return ResponseEntity.ok(new ArrayList<>());
             }
 
@@ -457,10 +382,10 @@ public class EventController {
                             event.getEventEnd().isAfter(LocalDateTime.now()))
                     .map(Event::getEventID)
                     .collect(Collectors.toList());
-            logger.info("Retrieved {} active event IDs", activeEventIds.size());
+
             return ResponseEntity.ok(activeEventIds);
         } catch (Exception e) {
-            logger.error("Failed to fetch active event IDs", e);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
