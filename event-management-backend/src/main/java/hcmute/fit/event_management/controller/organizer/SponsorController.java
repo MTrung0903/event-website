@@ -6,11 +6,9 @@ import hcmute.fit.event_management.entity.Event;
 import hcmute.fit.event_management.entity.Sponsor;
 import hcmute.fit.event_management.entity.SponsorEvent;
 import hcmute.fit.event_management.entity.keys.SponsorEventId;
+import hcmute.fit.event_management.mapper.SponsorMapper;
 import hcmute.fit.event_management.service.*;
-
-import hcmute.fit.event_management.service.Impl.CloudinaryServiceImpl;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +27,26 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1")
 public class SponsorController {
-    @Autowired
-    SponsorService sponsorService;
-    @Autowired
-    SponsorEventService sponsorEventService;
-    @Autowired
-    EventService eventService;
-    @Autowired
-    FileService fileService;
 
-    @Autowired
-    private CloudinaryServiceImpl cloudinaryServiceImpl;
+    private final SponsorService sponsorService;
+
+    private final SponsorEventService sponsorEventService;
+
+    private final EventService eventService;
+
+    private final  CloudinaryService cloudinaryServiceImpl;
+
+    private final SponsorMapper sponsorMapper;
+
+    public SponsorController(CloudinaryService cloudinaryServiceImpl, SponsorService sponsorService,
+                             SponsorEventService sponsorEventService, EventService eventService,
+                             SponsorMapper sponsorMapper) {
+        this.cloudinaryServiceImpl = cloudinaryServiceImpl;
+        this.sponsorService = sponsorService;
+        this.sponsorEventService = sponsorEventService;
+        this.eventService = eventService;
+        this.sponsorMapper = sponsorMapper;
+    }
 
     @GetMapping("/myevent/{eid}/sponsor")
     public ResponseEntity<?> getSponsorsByEventId(
@@ -57,36 +64,21 @@ public class SponsorController {
         }
         List<SponsorEventDTO> sponsorEventDTOs = new ArrayList<>();
         for (SponsorEvent sponsorEvent : sponsorEventPage.getContent()) {
-            SponsorEventDTO sponsorEventDTO = new SponsorEventDTO();
-            sponsorEventDTO.setSponsorId(sponsorEvent.getSponsor().getSponsorId());
-            sponsorEventDTO.setSponsorName(sponsorEvent.getSponsor().getSponsorName());
-            sponsorEventDTO.setSponsorEmail(sponsorEvent.getSponsor().getSponsorEmail());
-            sponsorEventDTO.setSponsorAddress(sponsorEvent.getSponsor().getSponsorAddress());
-            sponsorEventDTO.setSponsorLogo(cloudinaryServiceImpl.getFileUrl(sponsorEvent.getSponsor().getSponsorLogo()));
-            sponsorEventDTO.setSponsorPhone(sponsorEvent.getSponsor().getSponsorPhone());
-            sponsorEventDTO.setSponsorWebsite(sponsorEvent.getSponsor().getSponsorWebsite());
-            sponsorEventDTO.setSponsorRepresentativeName(sponsorEvent.getSponsor().getSponsorRepresentativeName());
-            sponsorEventDTO.setSponsorRepresentativeEmail(sponsorEvent.getSponsor().getSponsorRepresentativeEmail());
-            sponsorEventDTO.setSponsorRepresentativePhone(sponsorEvent.getSponsor().getSponsorRepresentativePhone());
-            sponsorEventDTO.setSponsorRepresentativePosition(sponsorEvent.getSponsor().getSponsorRepresentativePosition());
-            sponsorEventDTO.setSponsorType(sponsorEvent.getSponsorType());
-            sponsorEventDTO.setSponsorLevel(sponsorEvent.getSponsorLevel());
-            sponsorEventDTO.setSponsorStartDate(sponsorEvent.getSponsorStartDate());
-            sponsorEventDTO.setSponsorEndDate(sponsorEvent.getSponsorEndDate());
-            sponsorEventDTO.setSponsorStatus(sponsorEvent.getSponsorStatus());
+            SponsorEventDTO sponsorEventDTO = sponsorMapper.toSponsorEventDto(sponsorEvent);
             sponsorEventDTOs.add(sponsorEventDTO);
         }
-        Response response = new Response(1, "SUCCESSFULLY", new PageResponse(sponsorEventDTOs, sponsorEventPage.getTotalPages(), sponsorEventPage.getTotalElements()));
+        Response response = new Response(1, "SUCCESSFULLY",
+                new PageResponse(sponsorEventDTOs, sponsorEventPage.getTotalPages(),
+                        sponsorEventPage.getTotalElements()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/{userId}/sponsor")
     public ResponseEntity<?> getAllSponsors(@PathVariable("userId") int userId) {
         List<Sponsor> sponsors = sponsorEventService.findDistinctSponsorsByEventUserUserId(userId);
         List<SponsorDTO> sponsorEDTOs = new ArrayList<>();
         for (Sponsor sponsor : sponsors) {
-            SponsorDTO sponsorDTO = new SponsorDTO();
-            BeanUtils.copyProperties(sponsor, sponsorDTO);
-            sponsorDTO.setSponsorLogo(cloudinaryServiceImpl.getFileUrl(sponsor.getSponsorLogo()));
+            SponsorDTO sponsorDTO = sponsorMapper.toSponsorDto(sponsor);
             sponsorEDTOs.add(sponsorDTO);
         }
         Response response = new Response(1, "SUCCESSFULLY", sponsorEDTOs);

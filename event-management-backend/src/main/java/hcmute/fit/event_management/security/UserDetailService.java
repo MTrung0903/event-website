@@ -1,4 +1,4 @@
-package hcmute.fit.event_management.service.Impl;
+package hcmute.fit.event_management.security;
 
 import hcmute.fit.event_management.dto.UserDetail;
 import hcmute.fit.event_management.entity.User;
@@ -6,6 +6,7 @@ import hcmute.fit.event_management.entity.User;
 
 import hcmute.fit.event_management.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,10 +20,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     @Transactional

@@ -4,11 +4,11 @@ import hcmute.fit.event_management.dto.SegmentDTO;
 import hcmute.fit.event_management.dto.SpeakerDTO;
 import hcmute.fit.event_management.entity.Speaker;
 
+import hcmute.fit.event_management.service.CloudinaryService;
 import hcmute.fit.event_management.service.SegmentService;
-import hcmute.fit.event_management.service.SpeakerService;
-import hcmute.fit.event_management.service.Impl.CloudinaryServiceImpl;
+
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +22,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 public class SpeakerController {
-    @Autowired
-    SpeakerService speakerService;
-    @Autowired
-    SegmentService segmentService;
-    @Autowired
-    CloudinaryServiceImpl cloudinaryServiceImpl;
+
+
+
+    private final SegmentService segmentService;
+
+    private final CloudinaryService cloudinaryServiceImpl;
+
+    public SpeakerController(CloudinaryService cloudinaryServiceImpl,
+                             SegmentService segmentService) {
+        this.cloudinaryServiceImpl = cloudinaryServiceImpl;
+
+        this.segmentService = segmentService;
+    }
+
     @GetMapping("/myevent/{eid}/speaker")
     public ResponseEntity<?> getSpeakersByEventId(@PathVariable("eid") int eid) {
         List<Speaker> speakers = segmentService.getSpeakerByEventId(eid);
@@ -43,16 +51,20 @@ public class SpeakerController {
     }
 
     @PostMapping("/myevent/{eid}/speaker")
-    public ResponseEntity<?> createSpeakerByEventId(@PathVariable("eid") int eid, @ModelAttribute SegmentDTO segmentDTO, // Nhận toàn bộ dữ liệu dạng text
-                                                    @RequestParam(value = "speakerImageFile", required = false) MultipartFile speakerImageFile)
+    public ResponseEntity<?> createSpeakerByEventId(@PathVariable("eid") int eid,
+                                                    @ModelAttribute SegmentDTO segmentDTO, // Nhận toàn bộ dữ liệu dạng text
+                                                    @RequestParam(value = "speakerImageFile",
+                                                            required = false) MultipartFile speakerImageFile)
             throws Exception {
         segmentService.addSegment(eid, segmentDTO);
         Response response = new Response(200, "", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     @PutMapping("/myevent/{eid}/speaker")
-    public ResponseEntity<?> updateSpeakerByEventId(@PathVariable("eid") int eid, @ModelAttribute SegmentDTO segmentDTO, // Nhận toàn bộ dữ liệu dạng text
-                                                    @RequestParam(value = "speakerImageFile", required = false) MultipartFile speakerImageFile)
+    public ResponseEntity<?> updateSpeakerByEventId(@PathVariable("eid") int eid,
+                                                    @ModelAttribute SegmentDTO segmentDTO, // Nhận toàn bộ dữ liệu dạng text
+                                                    @RequestParam(value = "speakerImageFile",
+                                                            required = false) MultipartFile speakerImageFile)
             throws Exception {
         segmentService.saveEditSegment(eid, segmentDTO);
         Response response = new Response(200, "", null);

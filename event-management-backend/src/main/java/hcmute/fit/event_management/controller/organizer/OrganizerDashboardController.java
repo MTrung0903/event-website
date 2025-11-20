@@ -5,7 +5,6 @@ import hcmute.fit.event_management.dto.EventDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.mapper.EventMapper;
 import hcmute.fit.event_management.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,25 +20,35 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/organizer/dashboard")
 public class OrganizerDashboardController {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private EventService eventService;
-    @Autowired
-    private BookingDetailsService bookingDetailsService;
-    @Autowired
-    private TransactionService transactionService;
-    @Autowired
-    private SponsorEventService sponsorEventService;
-    @Autowired
-    private OrganizerService organizerService;
 
-    @Autowired
-    private EventSearchService eventSearchService;
+    private final UserService userService;
 
-    @Autowired
-    private EventMapper eventMapper;
+    private final BookingDetailsService bookingDetailsService;
 
+    private final TransactionService transactionService;
+
+    private final SponsorEventService sponsorEventService;
+
+    private final OrganizerService organizerService;
+
+
+    private final EventSearchService eventSearchService;
+
+
+    private final EventMapper eventMapper;
+
+    public OrganizerDashboardController(BookingDetailsService bookingDetailsService,
+                                        UserService userService, TransactionService transactionService,
+                                        SponsorEventService sponsorEventService, OrganizerService organizerService,
+                                        EventSearchService eventSearchService, EventMapper eventMapper) {
+        this.bookingDetailsService = bookingDetailsService;
+        this.userService = userService;
+        this.transactionService = transactionService;
+        this.sponsorEventService = sponsorEventService;
+        this.organizerService = organizerService;
+        this.eventSearchService = eventSearchService;
+        this.eventMapper = eventMapper;
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ORGANIZER')")

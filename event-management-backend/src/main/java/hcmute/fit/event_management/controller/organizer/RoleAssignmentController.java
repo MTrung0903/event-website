@@ -4,7 +4,6 @@ import hcmute.fit.event_management.dto.*;
 import hcmute.fit.event_management.service.EventSearchService;
 import hcmute.fit.event_management.service.EventService;
 import hcmute.fit.event_management.service.RoleAssignmentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +17,22 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/role-assignment")
 public class RoleAssignmentController {
-    @Autowired
-    private RoleAssignmentService roleAssignmentService;
 
-    @Autowired
-    private EventService eventService;
+    private final RoleAssignmentService roleAssignmentService;
 
-    @Autowired
-    private EventSearchService eventSearchService;
+
+    private final EventService eventService;
+
+
+    private final EventSearchService eventSearchService;
+
+    public RoleAssignmentController(EventSearchService eventSearchService,
+                                    RoleAssignmentService roleAssignmentService,
+                                    EventService eventService) {
+        this.eventSearchService = eventSearchService;
+        this.roleAssignmentService = roleAssignmentService;
+        this.eventService = eventService;
+    }
 
     @PostMapping("/assign-role")
     @PreAuthorize("hasRole('ORGANIZER')")
@@ -70,12 +77,8 @@ public class RoleAssignmentController {
         }
         List<EventDTO> eventDTOs = eventSearchService.getEventsByUSer(userId);
         Set<EventDTO> finalEvents = new HashSet<>();
-        for (EventDTO event : eventDTOs) {
-            finalEvents.add(event);
-        }
-        for (EventDTO event : events){
-            finalEvents.add(event);
-        }
+        finalEvents.addAll(eventDTOs);
+        finalEvents.addAll(events);
         return ResponseEntity.ok(finalEvents);
     }
     @DeleteMapping("delete")

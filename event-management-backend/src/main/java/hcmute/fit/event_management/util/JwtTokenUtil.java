@@ -56,7 +56,7 @@ public class JwtTokenUtil {
                 .claim("roles", roles)
                 .claim("userId", user.getUserId())
                 .claim("permissions", permissions)
-                .signWith(key)
+                .signWith(key,SignatureAlgorithm.HS256)
                 .compact();
     }
 

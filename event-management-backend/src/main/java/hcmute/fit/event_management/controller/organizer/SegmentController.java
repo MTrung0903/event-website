@@ -2,7 +2,6 @@ package hcmute.fit.event_management.controller.organizer;
 
 import hcmute.fit.event_management.dto.SegmentDTO;
 import hcmute.fit.event_management.service.SegmentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/segment")
 public class SegmentController {
-    @Autowired
-    private SegmentService segmentService;
+
+    private final SegmentService segmentService;
+
+    public SegmentController(SegmentService segmentService) {
+        this.segmentService = segmentService;
+    }
 
     @GetMapping("detail/{eventId}")
     public ResponseEntity<List<SegmentDTO>> getSegmentByEventId(@PathVariable("eventId") int eventId) {

@@ -1,6 +1,8 @@
 package hcmute.fit.event_management.repository;
 
 import hcmute.fit.event_management.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +21,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "(LOWER(u.fullName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%')))")
     List<User> findActiveUsersByFullNameOrEmail(@Param("query") String query);
+
+    @Query("select u from User u where  " +
+            "(u.fullName like :keyword or u.email like :keyword or u.address like :keyword)")
+    Page<User> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

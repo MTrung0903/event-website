@@ -2,6 +2,7 @@ package hcmute.fit.event_management.service.Impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import hcmute.fit.event_management.service.CloudinaryService;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,12 +12,13 @@ import java.io.IOException;
 import java.util.Map;
 
 @Service
-public class CloudinaryServiceImpl {
+public class CloudinaryServiceImpl implements CloudinaryService {
 
     @Autowired
     private Cloudinary cloudinary;
 
     // Upload file
+    @Override
     public String uploadFile(MultipartFile file) throws IOException {
         try {
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
@@ -30,6 +32,7 @@ public class CloudinaryServiceImpl {
 
     // Download file (trả về URL để client tự tải)
     @Named("getFileUrl")
+    @Override
     public String getFileUrl(String publicId) {
         // Determine resource type dynamically based on publicId or context
         // For simplicity, we assume the resource type is stored or can be inferred
@@ -37,12 +40,14 @@ public class CloudinaryServiceImpl {
     }
 
     // Delete file
+    @Override
     public boolean deleteFile(String publicId) throws IOException {
         Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "auto"));
         return "ok".equals(result.get("result"));
     }
 
     // Lấy publicId từ URL
+    @Override
     public String extractPublicIdFromUrl(String url) {
         String[] parts = url.split("/");
         String fileNameWithVersion = parts[parts.length - 1]; // vd: v1234567890/sample.jpg

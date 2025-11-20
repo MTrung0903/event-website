@@ -44,4 +44,6 @@ public interface UserService {
 
     @Transactional
     ResponseEntity<Response> unlockUser(String email);
+
+    Response getPageableUser(String keyword, String sort, int page, int size);
 }

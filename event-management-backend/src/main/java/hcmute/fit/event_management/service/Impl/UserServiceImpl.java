@@ -1,54 +1,46 @@
 package hcmute.fit.event_management.service.Impl;
 
-import com.cloudinary.Cloudinary;
 import hcmute.fit.event_management.dto.OrganizerDTO;
-import hcmute.fit.event_management.dto.PermissionDTO;
-import hcmute.fit.event_management.dto.RoleDTO;
 import hcmute.fit.event_management.dto.UserDTO;
+import hcmute.fit.event_management.dto.responses.UserPageableResponse;
+import hcmute.fit.event_management.dto.responses.UserResponse;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.entity.keys.AccountRoleId;
 import hcmute.fit.event_management.mapper.UserMapper;
 import hcmute.fit.event_management.repository.*;
 import hcmute.fit.event_management.service.UserService;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import payload.Response;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 
 public class UserServiceImpl implements UserService {
 
-
     private final UserRepository userRepository;
-
 
     private final RoleRepository roleRepository;
 
-
     private final UserRoleRepository userRoleRepository;
 
-
-    private final PasswordEncoder passwordEncoder;
-
-
     private final OrganizerRepository organizerRepository;
-
-
-
 
     private final MessageRepository messageRepository;
 
@@ -56,23 +48,19 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository, UserRoleRepository userRoleRepository,
-                           PasswordEncoder passwordEncoder, OrganizerRepository organizerRepository,
+                            OrganizerRepository organizerRepository,
                            MessageRepository messageRepository, UserMapper userMapper) {
 
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
-        this.passwordEncoder = passwordEncoder;
+
         this.organizerRepository = organizerRepository;
         this.messageRepository = messageRepository;
         this.userMapper = userMapper;
     }
 
     Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
-
-
-
 
 
     @Transactional
@@ -525,4 +513,65 @@ public class UserServiceImpl implements UserService {
                 "Tài khoản đã được mở khóa thành công"));
     }
 
+    @Override
+    public Response getPageableUser(String keyword, String sort, int page, int size){
+
+
+        //Sort
+        Sort.Order order = new Sort.Order(Sort.Direction.ASC, "userId");
+        if(StringUtils.hasLength(sort)){
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+            Matcher matcher = pattern.matcher(sort);
+            if(matcher.find()){
+                String column = matcher.group(1);
+                if(matcher.group(3).equalsIgnoreCase("asc")){
+                    order = new Sort.Order(Sort.Direction.ASC, column);
+                }else{
+                    order = new Sort.Order(Sort.Direction.DESC, column);
+                }
+            }
+        }
+        // Xu ly truong hop FE nhan page dau tien la 1
+        int pageNo = 0;
+        if(page > 0) pageNo = page - 1;
+        //Paging
+        Pageable pageable = PageRequest.of(pageNo,size,Sort.by(order));
+
+        Page<User> userPage;
+
+        //Search
+        if(StringUtils.hasLength(keyword)){
+            String searchKeyword = "%" + keyword.trim().toLowerCase() + "%";
+             userPage = userRepository.searchByKeyword(searchKeyword,pageable);
+        }else{
+            userPage = userRepository.findAll(pageable);
+        }
+
+        UserPageableResponse pageUser = getUserPageableResponse(pageNo,size,userPage);
+
+        Response response = new Response();
+        response.setStatusCode(200);
+        response.setMsg("User list");
+        response.setData(pageUser);
+        return response;
+    }
+    public UserPageableResponse getUserPageableResponse(int page, int size, Page<User> userPage){
+        List<UserResponse> userResponses = userPage.stream().map(user -> UserResponse.builder()
+                .userId(user.getUserId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .birthday(user.getBirthday())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .build())
+                .collect(Collectors.toList());
+
+        UserPageableResponse userPageableResponse = new UserPageableResponse();
+        userPageableResponse.setPageNumber(page);
+        userPageableResponse.setPageSize(size);
+        userPageableResponse.setTotalElements(userPage.getTotalElements());
+        userPageableResponse.setTotalPages(userPage.getTotalPages());
+        userPageableResponse.setUsers(userResponses);
+        return userPageableResponse;
+    }
 }

@@ -3,7 +3,6 @@ package hcmute.fit.event_management.controller.organizer;
 import hcmute.fit.event_management.dto.TicketDTO;
 import hcmute.fit.event_management.entity.*;
 import hcmute.fit.event_management.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,20 +16,27 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/ticket")
 public class TicketController {
-    @Autowired
-    TicketService ticketService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    OrganizerService organizationService;
-    @Autowired
-    CheckInTicketService checkInTicketService;
-    @Autowired
-    BookingService bookingService;
-    @Autowired
-    BookingDetailsService bookingDetailsService;
-    @Autowired
-    EventService eventService;
+
+    private final TicketService ticketService;
+
+    private final CheckInTicketService checkInTicketService;
+
+    private final BookingService bookingService;
+
+    private final BookingDetailsService bookingDetailsService;
+
+
+
+    public TicketController(BookingDetailsService bookingDetailsService, TicketService ticketService,
+                            CheckInTicketService checkInTicketService, BookingService bookingService
+                            ) {
+        this.bookingDetailsService = bookingDetailsService;
+        this.ticketService = ticketService;
+        this.checkInTicketService = checkInTicketService;
+        this.bookingService = bookingService;
+
+    }
+
     @PostMapping("/{eventId}")
     @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<TicketDTO> createTicket(@PathVariable int eventId, @RequestBody TicketDTO ticketDTO) {
